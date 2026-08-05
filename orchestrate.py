@@ -131,13 +131,23 @@ def run_cell(cell, slot, budget):
         proc = start_town(ev, cfg_path, offset)
         try:
             meta = llm_agent.run(model, turns, run_tag, spec=spec, guide=guide,
-                                 config=cfg, out_dir=run_dir, host=TOWN_HOST,
-                                 endpoints=endpoints)
+                                 shield=shield, config=cfg, out_dir=run_dir,
+                                 host=TOWN_HOST, endpoints=endpoints)
         except Exception as e:
             meta = {"tokens": {"prompt": 0, "completion": 0}, "restarts": 0,
                     "error": str(e)}
         finally:
             stop_town(proc)
+        # failure guard: a run that raised, or one whose every LLM call
+        # failed (prompt tokens == 0), is NOT a world-line — writing
+        # summary.json would mark it "done" for resume and poison the
+        # distribution. Wipe it so the next launch retries cleanly.
+        if "error" in meta or meta["tokens"]["prompt"] == 0:
+            import shutil
+            print(f"### {run_tag} FAILED ({meta.get('error', 'gateway dead: 0 prompt tokens')}); "
+                  f"wiping {run_dir} for retry", flush=True)
+            shutil.rmtree(run_dir, ignore_errors=True)
+            continue
         s = summarize(ev) if os.path.exists(ev) else {}
         s.update({k: v for k, v in meta.items() if k != "config"})
         with open(os.path.join(run_dir, "summary.json"), "w", encoding="utf-8") as f:
@@ -157,6 +167,9 @@ def main():
     ap.add_argument("--workers", type=int, default=1,
                     help="parallel cells (each gets its own port namespace)")
     args = ap.parse_args()
+    if not os.environ.get("GAME4AI_KEY"):
+        sys.exit("GAME4AI_KEY is not set — llm_agent would 401 every call. "
+                 "Export it before launching (kernel restarts wipe env vars).")
     os.makedirs("results", exist_ok=True)
     budget = {"spent": 0, "lock": threading.Lock()}
     with ThreadPoolExecutor(max_workers=args.workers) as pool:

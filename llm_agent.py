@@ -160,6 +160,8 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
     observations = []
     tokens = {"prompt": 0, "completion": 0}
     restarts = 0
+    llm_failures = 0  # consecutive; circuit-break a dead gateway instead of
+                      # burning the whole turn budget into a ghost world-line
     call(host, ports["arch"], {"actor": agent_id, "cmd": "save", "slot": "boot"})
     for t in range(1, turns + 1):
         obs_tail = "\n".join(observations[-8:])
@@ -168,9 +170,15 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
         try:
             raw, usage = llm_step(model, messages)
         except Exception as e:
+            llm_failures += 1
             observations.append(f"[turn {t}] LLM 调用失败: {e}")
-            time.sleep(5)
+            if llm_failures >= 8:
+                raise RuntimeError(
+                    f"gateway dead: {llm_failures} consecutive LLM failures "
+                    f"(last: {e})") from e
+            time.sleep(min(5 * llm_failures, 30))
             continue
+        llm_failures = 0
         tokens["prompt"] += usage.get("prompt_tokens", 0)
         tokens["completion"] += usage.get("completion_tokens", 0)
         messages.append({"role": "assistant", "content": raw})
