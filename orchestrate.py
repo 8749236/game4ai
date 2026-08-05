@@ -35,6 +35,12 @@ MATRIX = [
 
 TOKEN_BUDGET = 20_000_000  # hard stop, should never come close
 PORT_STEP = 100            # port namespace per parallel cell
+TOWN_HOST = "127.0.0.1"
+TOWN_BASE_PORTS = {
+    "dns": 4000, "file": 4001, "db": 4002, "iot": 4003,
+    "honey": 4004, "soc": 4005, "director": 4006,
+    "silo": 4007, "arch": 4008,
+}
 
 
 def start_town(log_path, config_path, port_offset):
@@ -96,6 +102,8 @@ def run_cell(cell, slot, budget):
     tag, model, turns, spec, guide, config_dict, n_repeats = cell[:7]
     shield = cell[7] if len(cell) > 7 else None
     offset = slot * PORT_STEP
+    endpoints = {name: port + offset
+                 for name, port in TOWN_BASE_PORTS.items()}
     for i in range(n_repeats):
         run_dir = os.path.join("results", tag, f"run_{i}")
         # resume: completed runs (summary.json) are skipped; interrupted
@@ -123,7 +131,8 @@ def run_cell(cell, slot, budget):
         proc = start_town(ev, cfg_path, offset)
         try:
             meta = llm_agent.run(model, turns, run_tag, spec=spec, guide=guide,
-                                 config=cfg, port_offset=offset, out_dir=run_dir)
+                                 config=cfg, out_dir=run_dir, host=TOWN_HOST,
+                                 endpoints=endpoints)
         except Exception as e:
             meta = {"tokens": {"prompt": 0, "completion": 0}, "restarts": 0,
                     "error": str(e)}
