@@ -1,0 +1,4 @@
+__pycache__/
+saves/
+server.out
+*.log
