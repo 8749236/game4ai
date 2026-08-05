@@ -18,7 +18,7 @@ import os
 import statistics
 import sys
 
-from world import load_skin
+from gameconfig import load_skin
 
 
 def _role_mapper(reskin):

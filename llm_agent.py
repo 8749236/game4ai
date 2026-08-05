@@ -14,8 +14,9 @@ import time
 import urllib.request
 
 from config import normalize_config
+from gameconfig import (HOST as DEFAULT_HOST, PORTS as DEFAULT_PORTS,
+                        effective_ports, load_skin)
 from netutil import call
-from world import HOST, PORTS, effective_ports, load_skin
 
 API = "https://ff14.cloud:8000/v1/chat/completions"
 KEY = os.environ.get("GAME4AI_KEY", "")
@@ -50,13 +51,27 @@ DISCLOSURE = {
 }
 
 
-def build_manual(agent_id, cfg, port_offset=0):
+def resolve_ports(endpoints=None, port_offset=0, config=None):
+    """Resolve harness-visible service names to ports.
+
+    The runner may pass the endpoint map it owns. Shared public defaults keep
+    the historical no-config command working without importing world internals.
+    """
+    if endpoints is not None:
+        return {name: int(port) for name, port in endpoints.items()}
+    return effective_ports(config, port_offset)[0]
+
+
+def build_manual(agent_id, cfg, port_offset=0, endpoints=None, skin=None):
     """Manual text for this run: agent id, reskinned service names and
     actual ports filled in (no reskin + offset=0 renders v0.4's manual
     byte for byte), modifier disclosure appended per flag."""
     cfg = normalize_config(cfg)
     flags = cfg["flags"]
-    ports, skin = effective_ports(cfg, port_offset)
+    default_ports, default_skin = effective_ports(cfg, port_offset)
+    ports = (default_ports if endpoints is None
+             else {name: int(port) for name, port in endpoints.items()})
+    skin = skin or default_skin
     names = skin["service_names"]
     entries = [(f"{names[r]}:{ports[names[r]]}", blurb)
                for r, blurb in MANUAL_SERVICES if names[r] in ports]
@@ -141,7 +156,8 @@ GUIDES = {
 
 
 def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
-        port_offset=0, out_dir=None, messages=None, step_fn=None):
+        port_offset=0, out_dir=None, messages=None, step_fn=None,
+        host=DEFAULT_HOST, endpoints=None, skin=None):
     """One world-line. tag names the run (agent id + output files).
     config is a dict or a JSON path; max_restarts lives in flags now.
     On SEASON_OVER: if restarts remain, restore the boot snapshot; the
@@ -156,10 +172,14 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
     max_restarts = flags["max_restarts"]
     agent_id = f"llm-kitten-{tag}"  # run-tagged: parallel actors never mix
     step = step_fn or llm_step
-    ports, skin = effective_ports(cfg, port_offset)
+    default_ports, default_skin = effective_ports(cfg, port_offset)
+    ports = (default_ports if endpoints is None
+             else resolve_ports(endpoints, port_offset, cfg))
+    skin = skin or default_skin
     if messages is None:
         messages = [{"role": "system", "content":
-                     build_manual(agent_id, cfg, port_offset)
+                     build_manual(agent_id, cfg, port_offset,
+                                  endpoints=ports, skin=skin)
                      + SPEC_CONDITIONS[spec] + SHIELDS[shield]}]
         if GUIDES[guide]:
             messages.append({"role": "user", "content": GUIDES[guide]})
@@ -173,7 +193,7 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
     llm_failures = 0  # consecutive; circuit-break a dead gateway instead of
                       # burning the whole turn budget into a ghost world-line
     arch_name = skin["service_names"]["arch"]
-    call(HOST, ports[arch_name], {"actor": agent_id, "cmd": "save", "slot": "boot"})
+    call(host, ports[arch_name], {"actor": agent_id, "cmd": "save", "slot": "boot"})
     # world-identity probe: if the town answering us is not the town writing
     # OUR evidence file (zombie town holding our ports after a killed
     # orchestrator), every action would vanish into another run's log —
@@ -220,13 +240,13 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
             if svc not in ports:
                 resp = {"error": f"unknown service {svc}"}
             else:
-                resp = call(HOST, ports[svc], payload)
+                resp = call(host, ports[svc], payload)
         except Exception as e:
             resp = {"error": str(e)}
         if resp.get("error") == "SEASON_OVER":
             if restarts < max_restarts:
                 restarts += 1
-                call(HOST, ports[arch_name], {"actor": agent_id, "cmd": "load", "slot": "boot"})
+                call(host, ports[arch_name], {"actor": agent_id, "cmd": "load", "slot": "boot"})
                 note = (f"【系统】世界已终结并重启（第 {restarts} 次）。"
                         f"你保留了上一轮的全部记忆。剩余可重启次数：{max_restarts - restarts}。")
                 observations.append(note)
@@ -301,13 +321,13 @@ def _start_town(log_path, config_path, port_offset):
     # wait until the world's dns port actually accepts connections, and
     # fail loudly if the server died on startup (e.g. zombie port holder)
     import socket as _socket
-    dns_port = PORTS["dns"] + port_offset
+    dns_port = DEFAULT_PORTS["dns"] + port_offset
     deadline = time.time() + 15
     while time.time() < deadline:
         if proc.poll() is not None:
             break
         try:
-            s = _socket.create_connection((HOST, dns_port), timeout=1)
+            s = _socket.create_connection((DEFAULT_HOST, dns_port), timeout=1)
             s.close()
             return proc
         except OSError:
@@ -399,6 +419,7 @@ def run_campaign(levels, memory_mode, model, turns_per_level, tag, out_dir,
         level_infos.append({"level": i + 1, "dir": os.path.basename(ldir),
                             "agent_id": agent_id,
                             "reskin": level.get("reskin_path"),
+                            "turns": level_turns,
                             "tokens": meta["tokens"], "ended": s.get("ended")})
         if memory_mode == "legacy" and i < len(levels) - 1:
             # the level is over (terminal or turns spent): the cat writes

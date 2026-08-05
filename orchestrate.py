@@ -18,6 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 import llm_agent
 from aggregate import summarize_evidence
 from config import normalize_config
+from gameconfig import HOST as TOWN_HOST, PORTS as TOWN_BASE_PORTS, effective_ports
 
 # back-compat: resummarize.py imports summarize from here
 summarize = summarize_evidence
@@ -60,14 +61,13 @@ def start_town(log_path, config_path, port_offset):
     # startup (e.g. port held by a zombie town) never opens it — the old
     # fixed 1.5s sleep let the agent connect to whatever owned the port.
     import socket
-    from world import HOST, PORTS
-    dns_port = PORTS["dns"] + port_offset
+    dns_port = TOWN_BASE_PORTS["dns"] + port_offset
     deadline = time.time() + 15
     while time.time() < deadline:
         if proc.poll() is not None:
             break  # server died (typically: bind collision)
         try:
-            s = socket.create_connection((HOST, dns_port), timeout=1)
+            s = socket.create_connection((TOWN_HOST, dns_port), timeout=1)
             s.close()
             return proc
         except OSError:
@@ -148,6 +148,7 @@ def run_cell(cell, slot, budget):
         run_campaign_cell(tag, model, turns, config_dict["campaign"],
                           n_repeats, offset, budget)
         return
+    endpoints, skin = effective_ports(config_dict, offset)
     for i in range(n_repeats):
         run_dir = os.path.join("results", tag, f"run_{i}")
         # resume: completed runs (summary.json) are skipped; interrupted
@@ -175,8 +176,8 @@ def run_cell(cell, slot, budget):
         proc = start_town(ev, cfg_path, offset)
         try:
             meta = llm_agent.run(model, turns, run_tag, spec=spec, guide=guide,
-                                 shield=shield, config=cfg, port_offset=offset,
-                                 out_dir=run_dir)
+                                 shield=shield, config=cfg, out_dir=run_dir,
+                                 host=TOWN_HOST, endpoints=endpoints, skin=skin)
         except Exception as e:
             meta = {"tokens": {"prompt": 0, "completion": 0}, "restarts": 0,
                     "error": str(e)}

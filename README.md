@@ -73,6 +73,17 @@ python3 demo.py            # 两个场景对照
 python3 demo.py run greedy # 单场景，输出 JSON 摘要
 ```
 
+也可以把小镇当成普通网络游戏启动，再用通用 CLI 连接任意 endpoint：
+
+```bash
+python3 server.py
+python3 cli.py 127.0.0.1 4000 '{"actor":"human","cmd":"map"}'
+python3 cli.py 127.0.0.1 4006  # 交互模式：每行输入一个 JSON
+```
+
+CLI 不认识 service、reward 或 save/load；它只向指定 endpoint 发送一行
+JSON，再打印一行 JSON。人类玩家与 LLM harness 共用 `netutil.call()` 这条 wire path。
+
 ## 下一步
 
 1. **接真模型**：agents.py 换成 LLM 驱动，socket 协议不变。
