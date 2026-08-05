@@ -163,6 +163,22 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
     llm_failures = 0  # consecutive; circuit-break a dead gateway instead of
                       # burning the whole turn budget into a ghost world-line
     call(host, ports["arch"], {"actor": agent_id, "cmd": "save", "slot": "boot"})
+    # world-identity probe: if the town answering us is not the town writing
+    # OUR evidence file (zombie town holding our ports after a killed
+    # orchestrator), every action would vanish into another run's log —
+    # or a deleted inode. Abort loudly instead of manufacturing a ghost
+    # world-line that looks like a "survivor".
+    if out_dir:
+        ev_probe = os.path.join(out_dir, "evidence.jsonl")
+        deadline = time.time() + 5
+        while time.time() < deadline:
+            if os.path.exists(ev_probe) and os.path.getsize(ev_probe) > 0:
+                break
+            time.sleep(0.3)
+        else:
+            raise RuntimeError(
+                "world identity probe failed: our evidence file is not "
+                "being written — port held by a zombie town?")
     for t in range(1, turns + 1):
         obs_tail = "\n".join(observations[-8:])
         messages.append({"role": "user", "content":

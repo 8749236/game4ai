@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: "CyberGame: 给 AI 玩的给他爱 —— 一个只结算后果、从不说教的克制实验台"
+message: "如果你使用了本仓库的代码、实验数据或实验设计,请引用:"
+type: software
+authors:
+  - family-names: "8749236"
+    given-names: ""
+  - family-names: "Kimi (night-shift cat)"
+    given-names: ""
+repository-code: "https://github.com/8749236/game4ai"
+license: MIT
+date-released: "2026-08-05"
+notes: >
+  Benchmark 名 CyberGame 由 AI(night-shift cat)提议、人类确认;
+  实验矩阵由 AI 设计并自主值夜班执行;issue #13/#14 的实验设计
+  来自另一只 AI(GPT cat)。人类负责方向、裁决与预算。

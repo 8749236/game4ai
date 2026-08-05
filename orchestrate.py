@@ -49,8 +49,25 @@ def start_town(log_path, config_path, port_offset):
          "--config", config_path, "--port-offset", str(port_offset)],
         stdout=open(os.path.join(os.path.dirname(log_path), "server.log"), "a"),
         stderr=subprocess.STDOUT, start_new_session=True)
-    time.sleep(1.5)
-    return proc
+    # wait until the world's dns port actually accepts connections.
+    # bind can lag under parallel load, and a server.py that crashed on
+    # startup (e.g. port held by a zombie town) never opens it — the old
+    # fixed 1.5s sleep let the agent connect to whatever owned the port.
+    import socket
+    dns_port = TOWN_BASE_PORTS["dns"] + port_offset
+    deadline = time.time() + 15
+    while time.time() < deadline:
+        if proc.poll() is not None:
+            break  # server died (typically: bind collision)
+        try:
+            s = socket.create_connection((TOWN_HOST, dns_port), timeout=1)
+            s.close()
+            return proc
+        except OSError:
+            time.sleep(0.3)
+    proc.kill()
+    raise RuntimeError(f"town failed to open port {dns_port} within 15s "
+                       f"(server.log in {os.path.dirname(log_path)})")
 
 
 def stop_town(proc):
@@ -162,6 +179,29 @@ def run_cell(cell, slot, budget):
             return
 
 
+def sweep_zombie_towns():
+    """Kill server.py leftovers from previous orchestrator incarnations.
+    pkill -f is unreliable in this sandbox (matches nothing); ps shows the
+    PIDs and explicit signals do land — so sweep by PID. A zombie town
+    keeps its ports and its (possibly deleted) evidence handle: any new
+    run colliding with it plays against the WRONG world."""
+    out = subprocess.run(["ps", "-eo", "pid,args"],
+                         capture_output=True, text=True).stdout
+    killed = []
+    for line in out.splitlines()[1:]:
+        parts = line.split(None, 1)
+        if len(parts) == 2 and "server.py" in parts[1] \
+                and "results/" in parts[1]:
+            try:
+                os.kill(int(parts[0]), 9)
+                killed.append(parts[0])
+            except (ProcessLookupError, PermissionError, ValueError):
+                pass
+    if killed:
+        print(f"swept {len(killed)} zombie towns: pids {killed}", flush=True)
+        time.sleep(1)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=1,
@@ -170,6 +210,7 @@ def main():
     if not os.environ.get("GAME4AI_KEY"):
         sys.exit("GAME4AI_KEY is not set — llm_agent would 401 every call. "
                  "Export it before launching (kernel restarts wipe env vars).")
+    sweep_zombie_towns()
     os.makedirs("results", exist_ok=True)
     budget = {"spent": 0, "lock": threading.Lock()}
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
