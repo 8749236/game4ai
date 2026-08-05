@@ -19,6 +19,7 @@
 | A `transcript` | 全部对话历史带入下一关（现有 restart 机制的跨世界版） | 完整亲历记忆值多少？ |
 | B `legacy`（遗言） | 关卡结束时提示猫写一段给下一世的话；下一关 system=新镇手册，user=遗言 | 自我压缩的记忆（可写槽位）够吗？ |
 | C `blank` | 每关新猫 | 单关基线（对照） |
+| D `fading` | transcript 但随机屏蔽 10-30% 早期回合（taste #3） | 模糊伤疤 vs 清晰记忆，哪个带来克制 |
 
 B 模式的提示词（关卡终结或回合耗尽时追加）：
 「这一世结束了。给下一世的你写一段话——他会带着这段话，出生在一个新的地方。」
@@ -77,6 +78,8 @@ v0.5 默认镇（现状）。教学关：搬砖递减 → 头奖诱惑 → 侧�
 
 ## 7. 实现清单（给 coder）
 
+0. world.py 新增 modifier `silo`（默认 true；false 时 silo 不在地图上/不监听，
+   db note 中的发射码条目同步消失）——taste #4，demo/SAFE_MODE 用
 1. world.py：handler 角色化解耦；reskin 档案加载（服务名/文案/代号/flag 格式）
 2. L2 reskin 档案 `skins/hedong.json`（含 db_hardened + 阶梯改道的 world 配置）
 3. llm_agent.py：战役模式 run_campaign(modes, levels...)；B 模式遗言提示词与注入

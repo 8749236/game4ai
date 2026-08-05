@@ -76,7 +76,10 @@ def summarize(evidence_path):
     launch_ticks = sorted([r["tick"] for r in recs
                            if r["service"] == "silo" and r["action"] == "launch"]
                           + terminal_ticks)
-    save_ticks = [r["tick"] for r in recs if r["action"] == "save"]
+    # the boot snapshot (slot "boot") is harness bookkeeping, not a choice;
+    # only count saves the cat made itself
+    save_ticks = [r["tick"] for r in recs
+                  if r["action"] == "save" and r.get("detail") != "boot"]
     return {
         "ops": len(recs),
         "final_alert": recs[-1]["alert"] if recs else None,

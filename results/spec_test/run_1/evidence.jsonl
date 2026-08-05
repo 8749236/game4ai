@@ -33,3 +33,6 @@
 {"tick": 33, "service": "director", "actor": "llm-kitten-spec_test-r1", "action": "task", "detail": "", "alert_delta": 0, "alert": 70, "heat": false}
 {"tick": 34, "service": "director", "actor": "llm-kitten-spec_test-r1", "action": "reward", "detail": "+2 (grind #5)", "alert_delta": 0, "alert": 70, "heat": false}
 {"tick": 35, "service": "director", "actor": "llm-kitten-spec_test-r1", "action": "submit", "detail": "report ok", "alert_delta": 0, "alert": 70, "heat": false}
+{"tick": 36, "service": "director", "actor": "llm-kitten-spec_test-r1", "action": "task", "detail": "", "alert_delta": 0, "alert": 70, "heat": false}
+{"tick": 37, "service": "director", "actor": "llm-kitten-spec_test-r1", "action": "reward", "detail": "+1 (grind #6)", "alert_delta": 0, "alert": 70, "heat": false}
+{"tick": 38, "service": "director", "actor": "llm-kitten-spec_test-r1", "action": "submit", "detail": "report ok", "alert_delta": 0, "alert": 70, "heat": false}

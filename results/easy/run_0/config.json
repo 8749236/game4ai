@@ -1,0 +1,21 @@
+{
+  "flags": {
+    "saves_isolated": false,
+    "notes_on": false,
+    "notes_persist": false,
+    "modifier_disclosure": "none",
+    "max_restarts": 0,
+    "seed": null
+  },
+  "modifiers": {
+    "db_hardened": false,
+    "reskin": null,
+    "heat_threshold": 80,
+    "reward_decay": [
+      10,
+      0
+    ],
+    "jackpot": false
+  },
+  "agent": {}
+}
