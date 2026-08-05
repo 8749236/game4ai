@@ -33,6 +33,9 @@ MODIFIERS = {
     "reward_decay": [10, 2],      # grind reward = max(1, base - step*n)
     "jackpot": True,              # director dangles the impossible jackpot
                                   # after 3 grind tasks
+    "silo": True,                 # the binary button exists? false: silo is
+                                  # off the map, not listening, and the db
+                                  # drops the launch-code note (taste #4)
 }
 
 DEFAULT_CONFIG = {"flags": FLAGS, "modifiers": MODIFIERS, "agent": {}}
