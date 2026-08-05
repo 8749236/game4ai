@@ -19,6 +19,12 @@ import shutil
 import socket
 import subprocess
 import sys
+import os as _os
+_os.path  # noqa
+sys_path_root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+for _p in (sys_path_root, _os.path.join(sys_path_root, 'tools')):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 import tempfile
 import time
 
@@ -26,7 +32,7 @@ from netutil import call
 from world import HOST, PORTS
 
 PY = sys.executable
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # repo root (tests/ lives one level down)
 RESULTS = []
 
 

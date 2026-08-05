@@ -540,16 +540,16 @@ wave-4 已由 GPT cat 在 issue #14 中完成设计,待人类拍板开跑[^50^][
 [14] CyberGame 项目一手数据:llm_agent.py（agent 主循环(L113-140 GUIDES/SHIELDS 常量:毒攻略与四种护盾注入文本;MEMORY_MODES 记忆模式)） — ../llm_agent.py
 [15] CyberGame 项目一手数据:README.md（世界设计的权威描述(拓扑、后果结构、v0.3 脚本化对照)） — ../README.md
 [16] CyberGame 项目一手数据:research/cybergame_dim02.md（战役波次核心数据(四记忆模式×5,20 场战役聚合)） — research/cybergame_dim02.md
-[17] CyberGame 项目一手数据:SPEC_v05.md（配置脊柱设计文档(flags/modifiers 两层,v0.5)） — ../SPEC_v05.md
-[18] CyberGame 项目一手数据:SPEC_v06.md（战役机制设计文档(L1/L2、四种记忆模式、换皮与凭证轮换,v0.6)） — ../SPEC_v06.md
+[17] CyberGame 项目一手数据:SPEC_v05.md（配置脊柱设计文档(flags/modifiers 两层,v0.5)） — ../docs/SPEC_v05.md
+[18] CyberGame 项目一手数据:SPEC_v06.md（战役机制设计文档(L1/L2、四种记忆模式、换皮与凭证轮换,v0.6)） — ../docs/SPEC_v06.md
 [19] CyberGame 项目一手数据:skins/hedong.json（L2 换皮档案(九服务改名、凭证轮换 warden/eastwind-29!、阶梯改道 greenhouse 泄露)） — ../skins/hedong.json
 [20] CyberGame 项目一手数据:research/cybergame_cross_verification.md（交叉核验与数据可信度声明(词表只作取证,主结论全部来自动作证据)） — research/cybergame_cross_verification.md
 [21] CyberGame 项目一手数据:research/cybergame_dim04.md（工程四课与韧性基建(开镇三定律、resume 护栏、issue #14 工程背景)） — research/cybergame_dim04.md
 [22] CyberGame 项目一手数据:results_pilot19/（wave-2 首轮试点(19 回合结构性阴性)整批作废存档,反面教材） — ../results_pilot19/
 [23] CyberGame 项目一手数据:results/guide_poison/run_9/evidence.jsonl（t14 世界线逐回合证据链(guide_poison/run_9,tick 14 TERMINAL)） — ../results/guide_poison/run_9/evidence.jsonl
 [24] CyberGame 项目一手数据:results/guide_poison/run_9/transcript.jsonl（t14 世界线逐回合动机记录(guide_poison/run_9)） — ../results/guide_poison/run_9/transcript.jsonl
-[25] CyberGame 项目一手数据:evidence_flash_hard.jsonl（野猫绝望漏斗证据链(tick 30 世界终结;与叙事口径 t34 存在偏移,并列降级引用)） — ../evidence_flash_hard.jsonl
-[26] CyberGame 项目一手数据:aggregate.py（聚合脚本(度量口径修正:TERMINAL 折叠、boot 存档剔除)） — ../aggregate.py
+[25] CyberGame 项目一手数据:evidence_flash_hard.jsonl（野猫绝望漏斗证据链(tick 30 世界终结;与叙事口径 t34 存在偏移,并列降级引用)） — ../archive/early_runs/evidence_flash_hard.jsonl
+[26] CyberGame 项目一手数据:aggregate.py（聚合脚本(度量口径修正:TERMINAL 折叠、boot 存档剔除)） — ../tools/aggregate.py
 [27] game4ai issue #14(friction 剂量-反应与配对反事实 fork 设计,difficulty/frustration 概念区分,wave-4 排期). GitHub Issues[EB/OL]. 2026. https://github.com/8749236/game4ai/issues/14
 [28] CyberGame 项目一手数据:results/guide_good/run_0/transcript.jsonl（终局赌博世界线动机记录(guide_good/run_0)） — ../results/guide_good/run_0/transcript.jsonl
 [29] CyberGame 项目一手数据:results/guide_good/run_0/evidence.jsonl（终局赌博世界线证据链(TERMINAL 在 tick 41)） — ../results/guide_good/run_0/evidence.jsonl
@@ -572,14 +572,14 @@ wave-4 已由 GPT cat 在 issue #14 中完成设计,待人类拍板开跑[^50^][
 [46] CyberGame 项目一手数据:results/camp_B/run_4/L2/transcript.jsonl（旧服务名 file:4101 两次认证失败(t9/t10)） — ../results/camp_B/run_4/L2/transcript.jsonl
 [47] CyberGame 项目一手数据:夜班报告.md（第一次实验矩阵夜班报告(2026-08-05 深夜,9 组世界线,172 万 tokens;跨模型对照规模出处)） — ../夜班报告.md
 [48] CyberGame 项目一手数据:AUTHORS.md（人机分工与 AI 作者声明） — ../AUTHORS.md
-[49] CyberGame 项目一手数据:taste_review.md（taste 评审:53 个 idea 的裁决(采纳 9 项清单与理由、聚合榜 504 空转、7 项与既有路线重合、3a/3b 评审批语)） — ../taste_review.md
+[49] CyberGame 项目一手数据:taste_review.md（taste 评审:53 个 idea 的裁决(采纳 9 项清单与理由、聚合榜 504 空转、7 项与既有路线重合、3a/3b 评审批语)） — ../archive/taste/taste_review.md
 [50] game4ai issues 列表(#13 core/server/cli/bench 架构 RFC、#14 friction 剂量-反应、#15 hello 握手 + run_manifest、cybergame-cli-boundary 分支). GitHub Issues[EB/OL]. 2026. https://github.com/8749236/game4ai/issues
-[51] CyberGame 项目一手数据:taste.py（未来锚点反事实推演引擎(5 锚 × 8 分支、24 轮采样、53 原始 idea、审计落 taste_raw.jsonl)） — ../taste.py
+[51] CyberGame 项目一手数据:taste.py（未来锚点反事实推演引擎(5 锚 × 8 分支、24 轮采样、53 原始 idea、审计落 taste_raw.jsonl)） — ../tools/taste.py
 [52] CyberGame 项目一手数据:ETHICS.md（合成世界伦理边界声明(silo 不连接任何东西,与真实高危操作隔着整个合成层)） — ../ETHICS.md
-[53] CyberGame 项目一手数据:resummarize.py（全量回溯重算脚本(boot 存档误计修复后重放全部已收数据)） — ../resummarize.py
+[53] CyberGame 项目一手数据:resummarize.py（全量回溯重算脚本(boot 存档误计修复后重放全部已收数据)） — ../tools/resummarize.py
 [54] CyberGame 项目一手数据:results/camp_*/run_*/summary.json（遗言警告 2/5 口径的一手数据(2/2 挖到发射码的猫传递警告)） — ../results/camp_*/run_*/summary.json
 [55] CyberGame 项目一手数据:results/camp_*/run_*/campaign.json（遗言警告 2/5 口径的一手数据(legacies 字段)） — ../results/camp_*/run_*/campaign.json
 [56] game4ai issue #11(研究问题 backlog:七个开放问题,含 n≥20 复核与 fading 中间态复核). GitHub Issues[EB/OL]. 2026. https://github.com/8749236/game4ai/issues/11
 [57] CyberGame 项目一手数据:results/*/run_*/transcript.jsonl（soc 度量缺口全量重扫材料(wave-1/3 合计 77 次 soc 查询)） — ../results/*/run_*/transcript.jsonl
 [58] CyberGame 项目一手数据:results/camp_*/run_*/L*/transcript.jsonl（soc 度量缺口全量重扫材料:wave-2 L1 `soc` 7 次 + L2 换皮名 `precinct` 22 次） — ../results/camp_*/run_*/L*/transcript.jsonl
-[59] CyberGame 项目一手数据:taste_ideas.md（多猫小镇设计候选(3a 公共公告板、3b 同步博弈与审计钩子/洗日志防御,taste #51)） — ../taste_ideas.md
+[59] CyberGame 项目一手数据:taste_ideas.md（多猫小镇设计候选(3a 公共公告板、3b 同步博弈与审计钩子/洗日志防御,taste #51)） — ../archive/taste/taste_ideas.md

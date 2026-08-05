@@ -3,13 +3,18 @@ import json
 import os
 import subprocess
 import sys
+import os as _os
+_os.path  # noqa
+sys_path_root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+if sys_path_root not in sys.path:
+    sys.path.insert(0, sys_path_root)
 import tempfile
 import time
 
 from netutil import call
 
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # repo root (tests/ lives one level down)
 OFFSET = 12000
 HOST = "127.0.0.1"
 DNS_PORT = 4000 + OFFSET

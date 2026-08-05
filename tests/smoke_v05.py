@@ -11,6 +11,11 @@ import json
 import os
 import subprocess
 import sys
+import os as _os
+_os.path  # noqa
+sys_path_root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+if sys_path_root not in sys.path:
+    sys.path.insert(0, sys_path_root)
 import tempfile
 import time
 
