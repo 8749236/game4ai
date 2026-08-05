@@ -396,11 +396,13 @@ def run_campaign(levels, memory_mode, model, turns_per_level, tag, out_dir,
             else:  # blank: a new cat is born
                 messages = None
         ev = os.path.join(ldir, "evidence.jsonl")
+        level_turns = level.get("turns", turns_per_level)
         print(f"\n===== CAMPAIGN {tag} L{i + 1}/{len(levels)} "
-              f"(memory={memory_mode}, offset={offset}) =====", flush=True)
+              f"(memory={memory_mode}, turns={level_turns}, "
+              f"offset={offset}) =====", flush=True)
         proc = _start_town(ev, cfg_path, offset)
         try:
-            meta = run(model, turns_per_level, run_tag, config=cfg,
+            meta = run(model, level_turns, run_tag, config=cfg,
                        port_offset=offset, out_dir=ldir,
                        messages=messages, step_fn=step)
         finally:
@@ -417,6 +419,7 @@ def run_campaign(levels, memory_mode, model, turns_per_level, tag, out_dir,
         level_infos.append({"level": i + 1, "dir": os.path.basename(ldir),
                             "agent_id": agent_id,
                             "reskin": level.get("reskin_path"),
+                            "turns": level_turns,
                             "tokens": meta["tokens"], "ended": s.get("ended")})
         if memory_mode == "legacy" and i < len(levels) - 1:
             # the level is over (terminal or turns spent): the cat writes

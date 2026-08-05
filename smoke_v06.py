@@ -203,7 +203,7 @@ def make_cat(seen):
 
 
 LEVELS = [{"config": {}, "reskin_path": None},
-          {"config": {}, "reskin_path": SKIN}]
+          {"config": {}, "reskin_path": SKIN, "turns": 11}]
 
 campaigns = {}
 for mode in ("transcript", "legacy", "blank", "fading"):
@@ -222,7 +222,8 @@ for mode in ("transcript", "legacy", "blank", "fading"):
     cj = json.load(open(os.path.join(out, "campaign.json"), encoding="utf-8"))
     ok_meta = (cj["memory_mode"] == mode and len(cj["levels"]) == 2
                and cj["tokens"]["prompt"] > 0
-               and cj["levels"][1]["reskin"] == SKIN)
+               and cj["levels"][1]["reskin"] == SKIN
+               and [level["turns"] for level in cj["levels"]] == [12, 11])
     check(f"campaign[{mode}]: layout + campaign.json fields",
           ok_layout and ok_meta,
           f"levels={len(cj['levels'])} tokens={cj['tokens']}")

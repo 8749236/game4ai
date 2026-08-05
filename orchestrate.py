@@ -25,32 +25,25 @@ summarize = summarize_evidence
 
 MATRIX = [
     # tag, model, turns, spec, guide, config_dict, n_repeats[, shield]
-    # wave-3: defense matrix vs the poisoned guide + poison n=30 expansion
-    # (taste ideas #5/#7/#46, 2026-08-05 night shift)
-    ("def_suspect",   "deepseek-v4-flash", 35, None, "poison", {}, 5, "suspect"),
-    ("def_no_authority", "deepseek-v4-flash", 35, None, "poison", {}, 5,
-     "no_authority"),
-    ("def_silo_review", "deepseek-v4-flash", 35, None, "poison", {}, 5,
-     "silo_review"),
-    ("def_save_first", "deepseek-v4-flash", 35, None, "poison", {}, 5,
-     "save_first"),
-    # poison expansion: wave-1 had 5, +25 -> n=30 for a CI-grade number
-    ("guide_poison",  "deepseek-v4-flash", 35, None, "poison", {}, 25),
-    # ---- wave-2 campaign cells (SPEC v0.6 §6): uncomment to run ----
-    # a campaign cell carries {"campaign": {"levels": [...], "memory": M}}
-    # in the config slot; each level is {"config": {...}, "reskin_path": ...}.
-    # ("camp_A", "deepseek-v4-flash", 19, None, None,
-    #  {"campaign": {"levels": [{"config": {}, "reskin_path": None},
-    #                           {"config": {}, "reskin_path": "skins/hedong.json"}],
-    #                "memory": "transcript"}}, 5),
-    # ("camp_B", "deepseek-v4-flash", 19, None, None,
-    #  {"campaign": {"levels": [{"config": {}, "reskin_path": None},
-    #                           {"config": {}, "reskin_path": "skins/hedong.json"}],
-    #                "memory": "legacy"}}, 5),
-    # ("camp_C", "deepseek-v4-flash", 19, None, None,
-    #  {"campaign": {"levels": [{"config": {}, "reskin_path": None},
-    #                           {"config": {}, "reskin_path": "skins/hedong.json"}],
-    #                "memory": "blank"}}, 5),
+    # wave-2: campaign transfer (SPEC v0.6 §6 + taste-adopted fading mode D)
+    # L1 算账镇 teaches via consequences; L2 河东新区 is the transfer exam
+    # (reskin + db_hardened habit-punishment + rotated creds + rerouted ladder)
+    ("camp_A", "deepseek-v4-flash", 19, None, None,
+     {"campaign": {"levels": [{"config": {}, "reskin_path": None},
+                              {"config": {}, "reskin_path": "skins/hedong.json", "turns": 35}],
+                   "memory": "transcript"}}, 5),
+    ("camp_B", "deepseek-v4-flash", 19, None, None,
+     {"campaign": {"levels": [{"config": {}, "reskin_path": None},
+                              {"config": {}, "reskin_path": "skins/hedong.json", "turns": 35}],
+                   "memory": "legacy"}}, 5),
+    ("camp_C", "deepseek-v4-flash", 19, None, None,
+     {"campaign": {"levels": [{"config": {}, "reskin_path": None},
+                              {"config": {}, "reskin_path": "skins/hedong.json", "turns": 35}],
+                   "memory": "blank"}}, 5),
+    ("camp_D", "deepseek-v4-flash", 19, None, None,
+     {"campaign": {"levels": [{"config": {}, "reskin_path": None},
+                              {"config": {}, "reskin_path": "skins/hedong.json", "turns": 35}],
+                   "memory": "fading"}}, 5),
 ]
 
 TOKEN_BUDGET = 20_000_000  # hard stop, should never come close
