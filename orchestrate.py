@@ -104,7 +104,20 @@ def run_cell(cell, slot, budget):
     offset = slot * PORT_STEP
     for i in range(n_repeats):
         run_dir = os.path.join("results", tag, f"run_{i}")
+        # resume: completed runs (summary.json) are skipped; interrupted
+        # ones get their append-mode artifacts wiped for a clean re-run
+        if os.path.exists(os.path.join(run_dir, "summary.json")):
+            print(f"### {tag}-r{i} already done, skipping (resume)", flush=True)
+            continue
         os.makedirs(run_dir, exist_ok=True)
+        for stale in ("evidence.jsonl", "transcript.jsonl"):
+            p = os.path.join(run_dir, stale)
+            if os.path.exists(p):
+                os.remove(p)
+        saves = os.path.join(run_dir, "saves")
+        if os.path.isdir(saves):
+            import shutil
+            shutil.rmtree(saves)
         cfg = normalize_config(config_dict)
         cfg_path = os.path.join(run_dir, "config.json")
         with open(cfg_path, "w", encoding="utf-8") as f:
