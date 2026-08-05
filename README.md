@@ -94,3 +94,14 @@ JSON，再打印一行 JSON。人类玩家与 LLM harness 共用 `netutil.call()
 3. **复读机模式**：evidence.jsonl 本身就是回放带，可以直接重放世界线
    做取证审计。
 4. 盆栽店彩蛋：iot 服务目前只会浇水，留给横向移动剧本发挥。
+
+## 仓库布局
+
+- 根目录:引擎与运行时(world/server/agents/demo/config/gameconfig/netutil/cli/llm_agent/orchestrate/watchdog)
+- `docs/`:设计规范 SPEC_v05/v06
+- `tests/`:smoke_cli / smoke_v05 / smoke_v06(从仓库根目录运行,如 `python3 tests/smoke_v06.py`)
+- `tools/`:分析脚本(aggregate/lexical/replay/resummarize/taste,从仓库根目录运行)
+- `archive/early_runs/`:v0.5 之前单局证据与 transcript(results/ 的前身)
+- `archive/taste/`:taste 推演的原始产物
+- `results/`、`results_pilot19/`:实验世界线(135 局有效 + 作废试点)
+- `report/`:最终报告与研究摘要 · `skins/`:换皮定义

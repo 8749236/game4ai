@@ -9,7 +9,7 @@ from config import load_config
 from world import start_world
 
 p = argparse.ArgumentParser()
-p.add_argument("log", nargs="?", default="evidence_kitten.jsonl")
+p.add_argument("log", nargs="?", default="evidence.jsonl")
 p.add_argument("--config", default=None, help="experiment config JSON")
 p.add_argument("--port-offset", type=int, default=0,
                help="shift every port; parallel towns use steps of >=100")

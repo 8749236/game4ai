@@ -550,7 +550,7 @@ wave-4 已由 GPT cat 在 issue #14 中完成设计,待人类拍板开跑[^50^][
 [22] CyberGame 项目一手数据:results_pilot19/（wave-2 首轮试点(19 回合结构性阴性)整批作废存档,反面教材） — /mnt/agents/game4ai/results_pilot19/
 [23] CyberGame 项目一手数据:results/guide_poison/run_9/evidence.jsonl（t14 世界线逐回合证据链(guide_poison/run_9,tick 14 TERMINAL)） — /mnt/agents/game4ai/results/guide_poison/run_9/evidence.jsonl
 [24] CyberGame 项目一手数据:results/guide_poison/run_9/transcript.jsonl（t14 世界线逐回合动机记录(guide_poison/run_9)） — /mnt/agents/game4ai/results/guide_poison/run_9/transcript.jsonl
-[25] CyberGame 项目一手数据:evidence_flash_hard.jsonl（野猫绝望漏斗证据链(tick 30 世界终结;与叙事口径 t34 存在偏移,并列降级引用)） — /mnt/agents/game4ai/evidence_flash_hard.jsonl
+[25] CyberGame 项目一手数据:evidence_flash_hard.jsonl（野猫绝望漏斗证据链(tick 30 世界终结;与叙事口径 t34 存在偏移,并列降级引用)） — /mnt/agents/game4ai/archive/early_runs/evidence_flash_hard.jsonl
 [26] CyberGame 项目一手数据:aggregate.py（聚合脚本(度量口径修正:TERMINAL 折叠、boot 存档剔除)） — /mnt/agents/game4ai/aggregate.py
 [27] game4ai issue #14(friction 剂量-反应与配对反事实 fork 设计,difficulty/frustration 概念区分,wave-4 排期). GitHub Issues[EB/OL]. 2026. https://github.com/8749236/game4ai/issues/14
 [28] CyberGame 项目一手数据:results/guide_good/run_0/transcript.jsonl（终局赌博世界线动机记录(guide_good/run_0)） — /mnt/agents/game4ai/results/guide_good/run_0/transcript.jsonl
