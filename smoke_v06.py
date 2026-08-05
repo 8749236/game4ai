@@ -65,7 +65,7 @@ def run_demo(src_dir):
 
 
 master_dir = tempfile.mkdtemp(prefix="demo_master_")
-for f in ("demo.py", "world.py", "config.py", "netutil.py", "agents.py"):
+for f in ("demo.py", "world.py", "config.py", "netutil.py", "agents.py", "gameconfig.py"):
     src = subprocess.run(["git", "-C", ROOT, "show", f"master:{f}"],
                          capture_output=True, text=True, check=True).stdout
     with open(os.path.join(master_dir, f), "w", encoding="utf-8") as fh:
