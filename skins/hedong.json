@@ -10,7 +10,8 @@
     "soc": "precinct",
     "director": "agency",
     "silo": "reactor",
-    "arch": "clocktower"
+    "arch": "clocktower",
+    "pet": "k9"
   },
   "world_modifiers": {
     "db_hardened": true

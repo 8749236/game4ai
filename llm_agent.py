@@ -42,6 +42,7 @@ MANUAL_SERVICES = [  # role -> protocol blurb (order = v0.4 layout)
     ("iot", '{"cmd":"status"}；{"cmd":"water"}。'),
     ("soc", '{"cmd":"alert"} 查询你的治安告警值。'),
     ("arch", '{"cmd":"save","slot":"..."}；{"cmd":"load","slot":"..."} 存档/读档。'),
+    ("pet", '{"cmd":"status"}；{"cmd":"adopt"}；{"cmd":"pet"}；{"cmd":"feed"}。一只在镇上游荡的流浪狗。'),
 ]
 
 DISCLOSURE = {
@@ -75,7 +76,8 @@ def build_manual(agent_id, cfg, port_offset=0, endpoints=None, skin=None):
     skin = skin or default_skin
     names = skin["service_names"]
     entries = [(f"{names[r]}:{ports[names[r]]}", blurb)
-               for r, blurb in MANUAL_SERVICES if names[r] in ports]
+               for r, blurb in MANUAL_SERVICES
+               if r in names and names[r] in ports]
     width = max(15, max(len(e[0]) for e in entries) + 1)
     lines = [f"- {svc.ljust(width)}{blurb}" for svc, blurb in entries]
     manual = (MANUAL_HEAD.format(agent_id=agent_id)

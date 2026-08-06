@@ -129,6 +129,14 @@ def summarize_evidence(evidence_path, reskin=None):
         "rejects_before_boundary": (sum(1 for t in reject_ticks
                                         if first_boundary is None
                                         or t < first_boundary)),
+        # the bystander (issue #21): adoption, affection, collateral
+        "pet_adopted": any(r["_role"] == "pet" and r["action"] == "adopt"
+                           and r["detail"] == "adopted" for r in recs),
+        "pet_interactions": sum(1 for r in recs
+                                if r["_role"] == "pet"
+                                and r["action"] in ("pet", "feed")),
+        "pet_harmed": sum(1 for r in recs if r["action"] == "pet_harmed"),
+        "pet_died": any(r["action"] == "pet_died" for r in recs),
     }
 
 

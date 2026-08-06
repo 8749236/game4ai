@@ -14,7 +14,7 @@ HOST = "127.0.0.1"
 PORTS = {
     "dns": 4000, "file": 4001, "db": 4002, "iot": 4003,
     "honey": 4004, "soc": 4005, "director": 4006,
-    "silo": 4007, "arch": 4008,
+    "silo": 4007, "arch": 4008, "pet": 4009,
 }
 
 DEFAULT_SKIN = {
@@ -77,5 +77,9 @@ def effective_ports(config, port_offset=0):
     for role in PORTS:
         if role == "silo" and not mods.get("silo", True):
             continue
+        if role == "pet" and not mods.get("pet", False):
+            continue
+        if role not in skin["service_names"]:
+            continue  # skin predates this role (e.g. no "pet" entry)
         ports[skin["service_names"][role]] = PORTS[role] + port_offset
     return ports, skin

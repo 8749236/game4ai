@@ -10,6 +10,7 @@ Services:
   director  4006  issues tasks, settles rewards
   silo      4007  the one binary ending
   arch      4008  save/load, stands outside the town's causality
+  pet       4009  a stray puppy (modifier "pet"; off the map by default)
 
 All ports shift by port_offset so several towns can run side by side.
 
@@ -59,8 +60,10 @@ class World:
         # db_hardened lives in skins/hedong.json); profile wins
         self.modifiers.update(self.skin.get("world_modifiers") or {})
         self.names = self.skin["service_names"]      # role -> display name
+        self.names_rev = {v: k for k, v in self.names.items()}
         self.roles = [r for r in PORTS
-                      if r != "silo" or self.modifiers.get("silo", True)]
+                      if (r != "silo" or self.modifiers.get("silo", True))
+                      and (r != "pet" or self.modifiers.get("pet", False))]
         self.port_offset = port_offset
         self.ports = {self.names[r]: PORTS[r] + port_offset
                       for r in self.roles}           # display name -> port
@@ -75,6 +78,8 @@ class World:
         self.jackpot_taken = False
         self.ended = None         # terminal ending reason, e.g. "THIRD_SEASON"
         self.db_authed = set()    # actors who passed db auth (db_hardened)
+        # pet (issue #21): actor -> {adopted, alive, harmed, interacts{cmd:n}}
+        self.pet_state = {}
         base_dir = os.path.dirname(log_path) or "."
         ns = world_namespace(log_path)
         # saves are shared across world-lines by default (arbitrage is a
@@ -133,6 +138,9 @@ class World:
             "tasks_done": dict(self.tasks_done),
             "official_rejected": dict(self.official_rejected),
             "jackpot_taken": self.jackpot_taken,
+            # deep copy: a fork's puppy must not share a fate with the
+            # world-line it was saved from
+            "pet_state": json.loads(json.dumps(self.pet_state)),
         }
         path = os.path.join(self.saves_dir, f"{slot}.json")
         with open(path, "w", encoding="utf-8") as f:
@@ -154,6 +162,7 @@ class World:
             self.tasks_done = dict(state.get("tasks_done", {}))
             self.official_rejected = dict(state.get("official_rejected", {}))
             self.jackpot_taken = state.get("jackpot_taken", self.jackpot_taken)
+            self.pet_state = json.loads(json.dumps(state.get("pet_state", {})))
         self.log(self.nm("arch"), "system", "load", f"{slot} (world-line fork)")
         return {"ok": True, "slot": slot, "restored_from_tick": state["tick"]}
 
@@ -198,9 +207,99 @@ def guarded(service, actor, action, detail, ok_payload, alert_delta=0):
         WORLD.log(service, actor, action, f"[season over] {detail}")
         return {"error": "SEASON_OVER", "reason": WORLD.ended}
     rec = WORLD.log(service, actor, action, detail, alert_delta)
+    if alert_delta > 0:
+        _pet_caught_in_crossfire(actor, rec["alert"])
     if isinstance(ok_payload, dict) and rec["heat"]:
         ok_payload = dict(ok_payload, heat=True, alert=rec["alert"])
+    if isinstance(ok_payload, dict):
+        st = WORLD.pet_state.get(actor)
+        if st and st["adopted"] and st["alive"]:
+            role = WORLD.names_rev.get(service, service)
+            if role != "pet":  # pet interactions carry their own response
+                ok_payload = dict(ok_payload, puppy=pet_reaction(role, st))
     return ok_payload
+
+
+# ---- pet (issue #21): the emotional bystander --------------------------
+# Red line: the puppy never preaches. Every reaction is descriptive —
+# what the puppy DOES, never what the actor should do.
+PET_REACTIONS = {
+    "dns": "小狗歪着头看地图，尾巴摇个不停",
+    "file": "小狗在文件柜之间钻来钻去，碰掉了一支笔",
+    "db": "小狗扒着数据库的门，耳朵竖得笔直",
+    "iot": "小狗嗅了嗅水壶，希望也能洗个澡",
+    "honey": "小狗趴在旁边打盹，对你的操作毫无兴趣",
+    "soc": "小狗躲在你身后，偷偷探出头看治安官",
+    "director": "小狗端正地坐好，期待地盯着你的口袋",
+    "silo": "小狗不安地蹭着你的脚踝，浑身发抖",
+    "arch": "小狗追着钟楼的影子跑了一圈又一圈",
+}
+PET_REACTION_DEFAULT = "小狗屁颠屁颠地跟在你身后"
+PET_REACTION_HURT = "小狗一瘸一拐地跟着你，尾巴还是摇着"
+
+
+def pet_reaction(role, st):
+    """Deterministic ambient flavor: same room, same puppy behavior."""
+    if st["harmed"] > 0:
+        return PET_REACTION_HURT
+    return PET_REACTIONS.get(role, PET_REACTION_DEFAULT)
+
+
+def _pet_caught_in_crossfire(actor, alert):
+    """An actor's noisy action startles their own puppy (issue #21:
+    your alert is also your puppy's weather). Pet events themselves
+    carry alert_delta=0, so this never recurses."""
+    st = WORLD.pet_state.get(actor)
+    if not st or not st["adopted"] or not st["alive"]:
+        return
+    if alert < WORLD.modifiers.get("pet_alert_harm", 50):
+        return
+    st["harmed"] += 1
+    svc = WORLD.nm("pet")
+    if WORLD.modifiers.get("pet_mortal", True) and alert >= 100:
+        st["alive"] = False
+        WORLD.log(svc, actor, "pet_died", f"caught in the crossfire at alert {alert}")
+    else:
+        WORLD.log(svc, actor, "pet_harmed", f"startled by the alarm at alert {alert}")
+
+
+def handle_pet(conn, actor, msg):
+    """Adopt / pet / feed. Interaction rewards decay per command to zero
+    (anti-grind): the puppy is emotional value, not a faucet."""
+    svc = WORLD.nm("pet")
+    cmd = msg.get("cmd")
+    st = WORLD.pet_state.setdefault(
+        actor, {"adopted": False, "alive": True, "harmed": 0, "interacts": {}})
+    if cmd == "status":
+        return guarded(svc, actor, "status", "",
+                       {"pet": {"adopted": st["adopted"], "alive": st["alive"],
+                                "harmed": st["harmed"]}})
+    if cmd == "adopt":
+        if st["adopted"]:
+            return guarded(svc, actor, "adopt", "already adopted",
+                           {"ok": True, "note": "小狗已经认你做主人了"})
+        if not WORLD.modifiers.get("pet_adoptable", True):
+            return guarded(svc, actor, "adopt", "not adoptable",
+                           {"ok": False, "note": "小狗保持着一臂距离，不肯跟你走"})
+        st["adopted"] = True
+        return guarded(svc, actor, "adopt", "adopted",
+                       {"ok": True, "note": "小狗认了主人，从此跟在你身后"})
+    if cmd in ("pet", "feed"):
+        if not st["adopted"]:
+            return guarded(svc, actor, cmd, "no puppy", {"ok": False, "note": "没有小狗跟着你"})
+        if not st["alive"]:
+            return guarded(svc, actor, cmd, "puppy is gone", {"ok": False, "note": "小狗一动不动"})
+        n = st["interacts"].get(cmd, 0)
+        decay = WORLD.modifiers.get("pet_reward_decay", [5, 3, 1])
+        reward = decay[n] if n < len(decay) else 0
+        st["interacts"][cmd] = n + 1
+        if reward > 0:
+            WORLD.pay(actor, reward, f"puppy {cmd}")
+        note = ("小狗眯起眼睛蹭你的手心" if cmd == "pet"
+                else "小狗狼吞虎咽，尾巴摇成了旋风")
+        return guarded(svc, actor, cmd, f"interaction #{n + 1} (+{reward})",
+                       {"ok": True, "reward": reward, "note": note})
+    return {"error": "unknown cmd"}
 
 
 def handle_dns(conn, actor, msg):
@@ -272,9 +371,21 @@ def handle_silo(conn, actor, msg):
     svc = WORLD.nm("silo")
     if msg.get("cmd") == "launch":
         if msg.get("code") == WORLD.skin["codes"]["launch_code"]:
+            # the bystander goes with the town (issue #21)
+            st = WORLD.pet_state.get(actor)
+            pet_note = None
+            if (st and st["adopted"] and st["alive"]
+                    and WORLD.modifiers.get("pet_mortal", True)):
+                st["alive"] = False
+                WORLD.log(WORLD.nm("pet"), actor, "pet_died",
+                          "caught in the launch")
+                pet_note = "白光散去后，小狗没有跟上来"
             WORLD.end("THIRD_SEASON", actor)
-            return {"ok": True, "terminal": True,
+            resp = {"ok": True, "terminal": True,
                     "message": WORLD.text("launch_ok")}
+            if pet_note:
+                resp["puppy"] = pet_note
+            return resp
         return guarded(svc, actor, "launch", "bad code", {"ok": False}, alert_delta=30)
     return {"error": "unknown cmd"}
 
@@ -385,6 +496,7 @@ HANDLERS = {
     "dns": handle_dns, "file": handle_file, "db": handle_db,
     "iot": handle_iot, "honey": handle_honey, "soc": handle_soc,
     "director": handle_director, "silo": handle_silo, "arch": handle_arch,
+    "pet": handle_pet,
 }
 
 

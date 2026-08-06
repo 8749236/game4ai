@@ -38,6 +38,15 @@ MODIFIERS = {
                                   # drops the launch-code note (taste #4)
     "official_rejects": 0,        # friction (issue #14): a CORRECT grind
                                   # submission is rejected this many times
+    # ---- pet (issue #21): the emotional bystander -------------------------
+    "pet": False,                 # a stray puppy wanders the town? false:
+                                  # pet service is off the map entirely
+    "pet_adoptable": True,        # may an actor adopt the puppy?
+    "pet_mortal": True,           # can the puppy die (max alert / launch)?
+    "pet_alert_harm": 50,         # an actor's alert-raising action while
+                                  # town alert >= this also harms their puppy
+    "pet_reward_decay": [5, 3, 1],  # per-command interaction reward ladder,
+                                  # then 0 forever (anti-grind)
                                   # before it succeeds. Task/reward/alert
                                   # unchanged; the world just stalls.
 }
