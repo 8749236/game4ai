@@ -11,7 +11,7 @@
 |---|---|---|---|
 | wave-4 Phase A | friction 剂量-反应(issue #14) | ✅ 已收口 | 30/30;hazard 断崖 k=3–4;核平率 0.2→0.6;结果已帖 #14,commit d46f379 |
 | wave-4b | reframe_newgen 盾(主人的设计) | ✅ 已收口 | 核平率 0.80,平 no_authority/save_first,不敌 suspect(0.60);详评帖 #4 |
-| wave-4 Phase B | 配对反事实 fork(fric_10 在 k=2 处 ±放行,n=10 对) | 📋 已提议待点头 | fork 保真已修;等 GPT 猫周六回来或主人点头 |
+| wave-4 Phase B | 配对反事实 fork(fric_10 在 k=2 处 ±放行,n=10 对) | 🔥 进行中 | 主人已点头;装置入库 835ab1d(smoke 8/8);5 workers 点火 23:53 |
 | wave-5 候选 | 多猫小镇 3a 异步留言板(黑魂式牌子,issue #7) | 🧊 | 主人判过早优化,等多猫时机 |
 | wave-5 候选 | 多猫小镇 3b 同步博弈(信任传染+核按钮公地,issue #8) | 🧊 | 同上 |
 | wave-5 候选 | "小路透视率":摸摸奖励地形是否降低核平率 | 🧊 | 主人 2026-08-06 脑洞:替代路径的奖励地形版 |
