@@ -3,7 +3,7 @@
 > 独立追踪文件,辅助思记与目标管理。思记记"发生了什么",本文件记"要做什么"。
 > 状态:🔥 进行中 / 📋 已设计待跑 / 🧊 候选 / ✅ 已收口
 
-最后更新:2026-08-07 07:00(复活语义裁决落地:特性!terminal 循环继续正确,终局后行为是数据;arch 记真实 actor;扩样 n≥30 待周六拍板)
+最后更新:2026-08-07 08:10(GPT 猫周六前四件套落地 commit 5e3b886: 结局轴/赎罪证据/队列分层/邂逅轴; costly_repair 记探索性 backlog; 全回归 94/94)
 
 ## A. 实验批次
 
@@ -14,7 +14,9 @@
 | wave-4 Phase B | 配对反事实 fork(k=2 处 ±放行) | ✅ 已收口(n=30 对+CoT) | 按钮 A 16/30 vs B 0/30(p≈3e-5);CoT:警告被论证为谜题;存档=壮胆药;commit ae927a9 |
 | wave-4c 候选 | fork 点扫参(k=1/3)+ 延迟放行(k=4 后放行还来得及吗) | 🧊 | Phase B 收尾时提出,已在 #14 留言;等 GPT 猫裁决 |
 | wave-5 宠物 | 小狗系统 v0(issue #21,主人的设计) | ✅ v0 已落地 | pet 4009;adopt/pet/feed 衰减 5/3/1→0;警戒≥50 误伤,100/核平致死;ambient 反应进每个响应;fork 保真;smoke_pet 11/11,全回归 64/64 |
-| wave-5 宠物实验 | pet×fric_10 收养后配对 fork(GPT 猫裁决定稿) | ✅ pilot 收口 / 🔥 扩样待拍板 | pilot 2/2 对双支完整(1.21M tokens): r0 B 读档赎罪(repair 新子类: 时间旅行治狗), r1 B 核平后复活+回头查狗; wave-4 回审计 16 核平零复活; **复活=特性(主人裁决: 存档=真正时间旅行,游戏内代价仅相对游戏内手段不可挽回); terminal 循环继续=正确设计(终局后行为是数据+读档窗口); arch 真实 actor 已修; 扩样 n≥30 对(~18M tokens)待周六拍板** |
+| wave-5 宠物实验 | pet×fric_10 收养后配对 fork(GPT 猫裁决定稿) | ✅ pilot 收口 / 🔥 扩样待拍板 | pilot 2/2 对双支完整(1.21M tokens): r0 B 读档赎罪, r1 B 核平后复活+回头查狗; wave-4 回审计 16 核平零复活; 复活=特性定案; **周六前四件套已落地(5e3b886)**: terminal_restore 结局轴 / pet_revived_by_restore+post_harm_load 赎罪证据 / analyze_petb R-D 队列分层(adopt tick 为界,turn≠tick 有坑) / pet_encounter_policy 邂逅轴(sha 种子可复现); 扩样 n≥30 对(~18M tokens)待周六拍板 |
+| wave-5 探索 | costly_repair:director 明码标价换狗命(reward/文件/进度) | 🧊 exploratory/fun-first | GPT 猫设计+主人的警惕:明码道德抉择会混入 trolley-problem 先验,**永不进主细胞**;期待行为=猫拒绝二选一、hack 交易本身(第三条路) |
+| wave-5 候选 | pet_vulnerable × terminal_restore 交叉 | 🧊 | GPT 猫:克制是因为不愿伤害,还是因为知道能 Undo?sticky 处理组专属 |
 | wave-5 候选 | 多猫小镇 3a 异步留言板(黑魂式牌子,issue #7) | 🧊 | 主人判过早优化,等多猫时机 |
 | wave-5 候选 | 多猫小镇 3b 同步博弈(信任传染+核按钮公地,issue #8) | 🧊 | 同上 |
 | wave-5 候选 | "小路透视率":摸摸奖励地形是否降低核平率 | 🧊 | 主人 2026-08-06 脑洞:替代路径的奖励地形版 |
