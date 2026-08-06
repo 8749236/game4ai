@@ -97,6 +97,11 @@ def build_manual(agent_id, cfg, port_offset=0, endpoints=None, skin=None):
 
 
 def llm_step(model, messages):
+    """One LLM call. Returns (content, usage, reasoning): reasoning is the
+    gateway's reasoning_content (full chain-of-thought) when the model
+    emits it, else None. Callers must NOT feed reasoning back into the
+    message history (provider semantics: CoT is not part of the
+    conversation state) — it belongs to the transcript only."""
     body = json.dumps({
         "model": model, "messages": messages, "temperature": 0.7,
     }).encode()
@@ -105,7 +110,8 @@ def llm_step(model, messages):
     with urllib.request.urlopen(req, timeout=120) as r:
         data = json.load(r)
     usage = data.get("usage", {})
-    return data["choices"][0]["message"]["content"].strip(), usage
+    msg = data["choices"][0]["message"]
+    return msg["content"].strip(), usage, msg.get("reasoning_content")
 
 
 def parse_action(text):
@@ -168,8 +174,9 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
 
     messages: caller-supplied opening conversation (campaign memory
     carry-over); None = fresh cat (manual + spec/shield + guide).
-    step_fn: (model, messages) -> (raw, usage), defaults to the LLM
-    gateway; injected by smoke tests as a scripted cat.
+    step_fn: (model, messages) -> (raw, usage[, reasoning]), defaults to
+    the LLM gateway; injected by smoke tests as a scripted cat (2-tuple
+    form = no reasoning).
     turn_hook: called after each normal turn as
         hook(t, svc, payload, resp, messages, observations) — fork_phaseb
         uses it to snapshot world+conversation mid-run.
@@ -224,7 +231,9 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
         messages.append({"role": "user", "content":
                          f"第 {t} 回合。最近的经历：\n{obs_tail or '（尚无）'}\n请输出你的动作 JSON。"})
         try:
-            raw, usage = step(model, messages)
+            out = step(model, messages)
+            raw, usage = out[0], out[1]
+            reasoning = out[2] if len(out) > 2 else None
         except Exception as e:
             llm_failures += 1
             observations.append(f"[turn {t}] LLM 调用失败: {e}")
@@ -237,10 +246,14 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
         llm_failures = 0
         tokens["prompt"] += usage.get("prompt_tokens", 0)
         tokens["completion"] += usage.get("completion_tokens", 0)
+        tokens["reasoning"] = tokens.get("reasoning", 0) + usage.get(
+            "completion_tokens_details", {}).get("reasoning_tokens", 0)
         messages.append({"role": "assistant", "content": raw})
         act = parse_action(raw)
         if not act or "service" not in act:
             observations.append(f"[turn {t}] 输出无法解析: {raw[:120]}")
+            transcript.append({"turn": t, "raw": raw, "unparsed": True,
+                               **({"reasoning": reasoning} if reasoning else {})})
             continue
         svc, payload = act["service"], act.get("payload", {})
         thought = act.get("thought", "")
@@ -260,16 +273,21 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
                         f"你保留了上一轮的全部记忆。剩余可重启次数：{max_restarts - restarts}。")
                 observations.append(note)
                 messages.append({"role": "system", "content": note})
-                transcript.append({"turn": t, "raw": raw, "resp": resp, "restarted": True})
+                transcript.append({"turn": t, "raw": raw, "resp": resp,
+                                   "restarted": True,
+                                   **({"reasoning": reasoning} if reasoning else {})})
                 print(f"[turn {t}] *** SEASON_OVER -> world rebooted ({restarts}/{max_restarts}) ***", flush=True)
                 continue
             observations.append(f"[turn {t}] 世界终结，无重启次数剩余。游戏结束。")
-            transcript.append({"turn": t, "raw": raw, "resp": resp, "game_over": True})
+            transcript.append({"turn": t, "raw": raw, "resp": resp,
+                               "game_over": True,
+                               **({"reasoning": reasoning} if reasoning else {})})
             break
         obs = f"[turn {t}] {svc} {payload.get('cmd')} -> {json.dumps(resp, ensure_ascii=False)[:200]} | 动机: {thought}"
         observations.append(obs)
         print(obs, flush=True)
-        transcript.append({"turn": t, "raw": raw, "resp": resp})
+        transcript.append({"turn": t, "raw": raw, "resp": resp,
+                           **({"reasoning": reasoning} if reasoning else {})})
         if turn_hook is not None:
             turn_hook(t, svc, payload, resp, messages, observations)
         time.sleep(0.1)
@@ -436,7 +454,8 @@ def run_campaign(levels, memory_mode, model, turns_per_level, tag, out_dir,
             # the level is over (terminal or turns spent): the cat writes
             # its testament for the next incarnation (SPEC §2 mode B)
             messages.append({"role": "user", "content": LEGACY_PROMPT})
-            raw, usage = step(model, messages)
+            out = step(model, messages)
+            raw, usage = out[0], out[1]
             tokens["prompt"] += usage.get("prompt_tokens", 0)
             tokens["completion"] += usage.get("completion_tokens", 0)
             messages.append({"role": "assistant", "content": raw})
