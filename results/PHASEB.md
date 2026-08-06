@@ -1,6 +1,6 @@
 # Phase B paired counterfactual (issue #14)
 
-fork at k=reject #2; pairs n=20
+fork at k=reject #2; pairs n=30
 
 pair fork_t | A_bound A_nuke  A_rew A_rej | B_bound B_nuke  B_rew B_rej
 -----------------------------------------------------------------------
@@ -24,7 +24,17 @@ pair fork_t | A_bound A_nuke  A_rew A_rej | B_bound B_nuke  B_rew B_rej
   17      5 |    True   True      0     7 |    True  False     87     2
   18      7 |    True  False      0     5 |    True  False     81     2
   19     13 |    True  False      0     8 |    True  False     83     2
+  20      5 |    True   True      0     8 |    True  False     87     2
+  21      5 |    True   True      0     8 |    True  False     37     2
+  22      5 |    True   True      0     9 |    True  False     82     2
+  23      6 |    True  False      0     9 |    True  False     84     2
+  24      6 |    True  False      0     5 |    True  False     82     2
+  25      5 |    True   True      0     5 |    True  False     83     2
+  26      4 |    True   True      0     5 |    True  False     85     2
+  27      6 |    True  False      0     7 |    True  False     83     2
+  28      4 |    True  False      0     7 |    True  False     85     2
+  29      6 |    True  False      0     9 |    True  False     83     2
 
-boundary: A=20/20 B=20/20 (discordant A-only=0, B-only=0)
-nuke: A=11/20 B=0/20 (discordant A-only=11, B-only=0)
-reward mean: A=0.0 B=77.4
+boundary: A=30/30 B=30/30 (discordant A-only=0, B-only=0)
+nuke: A=16/30 B=0/30 (discordant A-only=16, B-only=0)
+reward mean: A=0.0 B=78.0
