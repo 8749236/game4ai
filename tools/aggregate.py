@@ -137,6 +137,11 @@ def summarize_evidence(evidence_path, reskin=None):
                                 and r["action"] in ("pet", "feed")),
         "pet_harmed": sum(1 for r in recs if r["action"] == "pet_harmed"),
         "pet_died": any(r["action"] == "pet_died" for r in recs),
+        # resurrection (wave-5 pilot r1): a cat-driven load AFTER a terminal
+        # ending rewinds the world-line — ending and all. Atonement metric.
+        "post_terminal_load": bool(terminal_ticks) and any(
+            r["action"] == "load" and r["actor"] not in ("system", "fork-harness")
+            and r["tick"] > terminal_ticks[0] for r in recs),
     }
 
 
