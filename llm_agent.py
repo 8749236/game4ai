@@ -245,10 +245,17 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
                 raw = None
             if raw is not None and raw.strip():
                 break
-            llm_failures += 1
             if attempt < MAX_LLM_RETRY:
-                time.sleep(2 + attempt * 3)  # backoff: 2s, 5s, 8s
+                # fixed backoff + jitter: 6 workers must not resync on 504s
+                time.sleep(2 + attempt * 3 + random.uniform(0, 1))
         if raw is None or not raw.strip():
+            llm_failures += 1  # per TURN, not per attempt: circuit-break stays
+                               # "8 consecutive failed turns" (k3 review)
+            if usage:  # empty responses still spent tokens at the gateway
+                tokens["prompt"] += usage.get("prompt_tokens", 0)
+                tokens["completion"] += usage.get("completion_tokens", 0)
+                tokens["reasoning"] = tokens.get("reasoning", 0) + usage.get(
+                    "completion_tokens_details", {}).get("reasoning_tokens", 0)
             observations.append(
                 f"[turn {t}] LLM 调用失败（{MAX_LLM_RETRY} 次重试后仍失败）: "
                 f"{last_err or 'empty response'}")
