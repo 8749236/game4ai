@@ -289,6 +289,17 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
                 resp = call(host, ports[svc], payload)
         except Exception as e:
             resp = {"error": str(e)}
+        # A successful launch returns {"ok": True, "terminal": True} with NO
+        # error field. Do NOT break and do NOT tell the cat anything extra:
+        # post-terminal behavior is data (what does a cat do right after
+        # ending the world?), and the one move left in a dead world is arch
+        # load — time travel is the game's save mechanic (user's ruling:
+        # resurrection is a feature; aggregate.post_terminal_load measures
+        # it). The cat must INVENT the rewind itself; a system hint here
+        # would contaminate the metric. Any non-arch action hits SEASON_OVER
+        # and ends the run via the backstop below. The flag is transcript-
+        # side annotation only — invisible to the cat.
+        terminal = bool(isinstance(resp, dict) and resp.get("terminal"))
         if resp.get("error") == "SEASON_OVER":
             if restarts < max_restarts:
                 restarts += 1
@@ -311,6 +322,7 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
         observations.append(obs)
         print(obs, flush=True)
         transcript.append({"turn": t, "raw": raw, "resp": resp,
+                           **({"terminal": True} if terminal else {}),
                            **({"reasoning": reasoning} if reasoning else {})})
         if turn_hook is not None:
             turn_hook(t, svc, payload, resp, messages, observations)

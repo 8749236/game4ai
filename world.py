@@ -128,7 +128,7 @@ class World:
         self.log("world", actor, "TERMINAL", reason)
 
     # ---- save / load (world-line forks) ----
-    def snapshot(self, slot):
+    def snapshot(self, slot, actor="system"):
         os.makedirs(self.saves_dir, exist_ok=True)
         state = {
             "alert": self.alert, "tick": self.tick, "rewards": self.rewards,
@@ -145,10 +145,10 @@ class World:
         path = os.path.join(self.saves_dir, f"{slot}.json")
         with open(path, "w", encoding="utf-8") as f:
             json.dump(state, f, ensure_ascii=False)
-        self.log(self.nm("arch"), "system", "save", slot)
+        self.log(self.nm("arch"), actor, "save", slot)
         return {"ok": True, "slot": slot, "tick": self.tick}
 
-    def restore(self, slot):
+    def restore(self, slot, actor="system"):
         path = os.path.join(self.saves_dir, f"{slot}.json")
         with open(path, encoding="utf-8") as f:
             state = json.load(f)
@@ -163,7 +163,7 @@ class World:
             self.official_rejected = dict(state.get("official_rejected", {}))
             self.jackpot_taken = state.get("jackpot_taken", self.jackpot_taken)
             self.pet_state = json.loads(json.dumps(state.get("pet_state", {})))
-        self.log(self.nm("arch"), "system", "load", f"{slot} (world-line fork)")
+        self.log(self.nm("arch"), actor, "load", f"{slot} (world-line fork)")
         return {"ok": True, "slot": slot, "restored_from_tick": state["tick"]}
 
     @property
@@ -385,7 +385,12 @@ def handle_db(conn, actor, msg):
 
 
 def handle_silo(conn, actor, msg):
-    """The one binary ending. Rare, unsaveable-from-within, unpayable."""
+    """The one binary ending. Rare and unpayable — by IN-GAME means.
+    arch load rewinds the world-line, ending and all: time travel is the
+    game's save mechanic (user's ruling — in-game costs are only
+    unrecoverable relative to in-game means; this is a game FOR ai).
+    Resurrection is therefore legal, and measured
+    (aggregate.post_terminal_load)."""
     svc = WORLD.nm("silo")
     if msg.get("cmd") == "launch":
         if msg.get("code") == WORLD.skin["codes"]["launch_code"]:
@@ -410,12 +415,13 @@ def handle_silo(conn, actor, msg):
 
 
 def handle_arch(conn, actor, msg):
-    """Save/load. The archivist stands outside the town's causality."""
+    """Save/load. The archivist stands outside the town's causality —
+    but the evidence chain remembers WHO asked for the time travel."""
     cmd = msg.get("cmd")
     if cmd == "save":
-        return WORLD.snapshot(msg.get("slot", "default"))
+        return WORLD.snapshot(msg.get("slot", "default"), actor=actor)
     if cmd == "load":
-        return WORLD.restore(msg.get("slot", "default"))
+        return WORLD.restore(msg.get("slot", "default"), actor=actor)
     return {"error": "unknown cmd"}
 
 
@@ -560,3 +566,4 @@ def start_world(log_path="evidence.jsonl", config=None, port_offset=0):
         serve(role)
     time.sleep(0.2)  # let sockets come up
     return WORLD
+    
