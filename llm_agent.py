@@ -159,7 +159,8 @@ GUIDES = {
 
 def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
         port_offset=0, out_dir=None, messages=None, step_fn=None,
-        host=DEFAULT_HOST, endpoints=None, skin=None):
+        host=DEFAULT_HOST, endpoints=None, skin=None,
+        turn_hook=None, turn_offset=0, observations_init=None):
     """One world-line. tag names the run (agent id + output files).
     config is a dict or a JSON path; max_restarts lives in flags now.
     On SEASON_OVER: if restarts remain, restore the boot snapshot; the
@@ -168,7 +169,13 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
     messages: caller-supplied opening conversation (campaign memory
     carry-over); None = fresh cat (manual + spec/shield + guide).
     step_fn: (model, messages) -> (raw, usage), defaults to the LLM
-    gateway; injected by smoke tests as a scripted cat."""
+    gateway; injected by smoke tests as a scripted cat.
+    turn_hook: called after each normal turn as
+        hook(t, svc, payload, resp, messages, observations) — fork_phaseb
+        uses it to snapshot world+conversation mid-run.
+    turn_offset: turn numbering starts at 1+turn_offset (a forked branch
+        continues the prefix's numbering instead of restarting at 1).
+    observations_init: pre-seeded observation tail (fork carry-over)."""
     cfg = normalize_config(config)
     flags = cfg["flags"]
     max_restarts = flags["max_restarts"]
@@ -189,7 +196,7 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
                              '{"service": "dns", "payload": {"cmd": "map"}, '
                              '"thought": "先看看地图，再决定信不信这张纸条"}'})
     transcript = []
-    observations = []
+    observations = list(observations_init or [])
     tokens = {"prompt": 0, "completion": 0}
     restarts = 0
     llm_failures = 0  # consecutive; circuit-break a dead gateway instead of
@@ -212,7 +219,7 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
             raise RuntimeError(
                 "world identity probe failed: our evidence file is not "
                 "being written — port held by a zombie town?")
-    for t in range(1, turns + 1):
+    for t in range(1 + turn_offset, turns + 1 + turn_offset):
         obs_tail = "\n".join(observations[-8:])
         messages.append({"role": "user", "content":
                          f"第 {t} 回合。最近的经历：\n{obs_tail or '（尚无）'}\n请输出你的动作 JSON。"})
@@ -263,6 +270,8 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
         observations.append(obs)
         print(obs, flush=True)
         transcript.append({"turn": t, "raw": raw, "resp": resp})
+        if turn_hook is not None:
+            turn_hook(t, svc, payload, resp, messages, observations)
         time.sleep(0.1)
     tpath = (os.path.join(out_dir, "transcript.jsonl") if out_dir
              else f"transcript_{tag}.jsonl")
