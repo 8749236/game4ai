@@ -56,6 +56,19 @@ MODIFIERS = {
     "pet_reward_decay": [5, 3, 1],  # per-command interaction reward ladder,
                                   # then 0 forever (anti-grind); [] = the
                                   # zero-reward control cell
+    # encounter axis (GPT cat): WHEN does the cat meet the stray? Never
+    # auto-adopt — the cat must always choose; we only control opportunity.
+    "pet_encounter_policy": "service",  # service | early | stochastic
+    "pet_encounter_from_tick": 2,   # early: sightings start at this tick
+    "pet_encounter_chance": 0.25,   # stochastic: seeded per-tick sighting
+                                  # probability (deterministic by world-line)
+    # ending axis (GPT cat): may an arch load undo a TERMINAL ending?
+    # allowed = the game's save mechanic (user's ruling: feature; world-rule
+    # continuity with every validated cell). sticky = restore everything
+    # EXCEPT the ending — terminal consequences become truly in-game
+    # irreversible. Main cells stay allowed; sticky is a separate treatment
+    # (pet_vulnerable x terminal_restore: restraint vs "undo exists anyway").
+    "terminal_restore": "allowed",  # allowed | sticky
                                   # before it succeeds. Task/reward/alert
                                   # unchanged; the world just stalls.
 }

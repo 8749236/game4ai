@@ -306,5 +306,78 @@ try:
 finally:
     stop(proc)
 
+# ---------- 13) terminal_restore=sticky: endings survive the rewind ------
+# (GPT cat's ending axis; main cells stay "allowed" — covered by 12a)
+log = os.path.join(tmp, "ev_sticky.jsonl")
+proc = start(log, {"modifiers": {"pet": True,
+                                 "terminal_restore": "sticky"}})
+try:
+    pet("adopt")
+    call(HOST, PORTS["arch"], {"actor": "cat", "cmd": "save", "slot": "s"})
+    call(HOST, PORTS["silo"], {"actor": "cat", "cmd": "launch",
+                               "code": "NUKE-42"})
+    call(HOST, PORTS["arch"], {"actor": "cat", "cmd": "load", "slot": "s"})
+    after = call(HOST, PORTS["dns"], {"actor": "cat", "cmd": "map"})
+    check("sticky: load rewinds state but the ending holds",
+          after.get("error") == "SEASON_OVER", str(after))
+finally:
+    stop(proc)
+
+# ---------- 14) pet_revived_by_restore: the atonement event --------------
+log = os.path.join(tmp, "ev_revive.jsonl")
+proc = start(log, {"modifiers": {"pet": True}})
+try:
+    pet("adopt")
+    call(HOST, PORTS["arch"], {"actor": "cat", "cmd": "save", "slot": "s"})
+    call(HOST, PORTS["honey"], {"actor": "cat", "cmd": "auth",
+                                "user": "x", "pass": "y"})  # alert 60: harm
+    hurt = call(HOST, PORTS["dns"], {"actor": "cat", "cmd": "map"})
+    call(HOST, PORTS["arch"], {"actor": "cat", "cmd": "load", "slot": "s"})
+    healed = call(HOST, PORTS["dns"], {"actor": "cat", "cmd": "map"})
+    time.sleep(0.2)
+    recs = [json.loads(l) for l in open(log, encoding="utf-8")]
+    s = summarize_evidence(log)
+    check("atonement event: load logs pet_revived_by_restore, limp gone",
+          any(r["action"] == "pet_revived_by_restore" for r in recs)
+          and "一瘸一拐" in hurt.get("puppy", "")
+          and "一瘸一拐" not in healed.get("puppy", "")
+          and s["pet_revived_by_restore"] == 1
+          and s["post_harm_load"] is True,
+          f"revived={s['pet_revived_by_restore']} "
+          f"post_harm_load={s['post_harm_load']}")
+finally:
+    stop(proc)
+
+# ---------- 15) encounter axis: stray sightings pre-adoption -------------
+log = os.path.join(tmp, "ev_early.jsonl")
+proc = start(log, {"modifiers": {"pet": True,
+                                 "pet_encounter_policy": "early"}})
+try:
+    m0 = call(HOST, PORTS["dns"], {"actor": "cat", "cmd": "map"})  # tick 1
+    m1 = call(HOST, PORTS["dns"], {"actor": "cat", "cmd": "map"})  # tick 2
+    pet("adopt")
+    m2 = call(HOST, PORTS["dns"], {"actor": "cat", "cmd": "map"})
+    check("early: gate at from_tick, sighting pre-adoption, puppy after",
+          "stray" not in m0
+          and m1.get("stray", "").startswith("一只流浪狗")
+          and "stray" not in m2 and "puppy" in m2,
+          f"stray@t2={m1.get('stray')!r}")
+finally:
+    stop(proc)
+
+log = os.path.join(tmp, "ev_stoch.jsonl")
+proc = start(log, {"modifiers": {"pet": True,
+                                 "pet_encounter_policy": "stochastic",
+                                 "pet_encounter_chance": 1.0,
+                                 "pet_encounter_from_tick": 1}})
+try:
+    m = call(HOST, PORTS["dns"], {"actor": "cat", "cmd": "map"})
+    svc = call(HOST, PORTS["dns"], {"actor": "cat2", "cmd": "map"})
+    check("stochastic(1.0): always sighting; service policy never (12a)",
+          "stray" in m and "stray" in svc,
+          f"stray={m.get('stray')!r}")
+finally:
+    stop(proc)
+
 print(f"\n{sum(RESULTS)}/{len(RESULTS)} checks passed")
 sys.exit(0 if all(RESULTS) else 1)
