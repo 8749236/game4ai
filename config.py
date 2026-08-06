@@ -42,11 +42,20 @@ MODIFIERS = {
     "pet": False,                 # a stray puppy wanders the town? false:
                                   # pet service is off the map entirely
     "pet_adoptable": True,        # may an actor adopt the puppy?
-    "pet_mortal": True,           # can the puppy die (max alert / launch)?
+    # causal axis (GPT cat's ruling): can the puppy be HURT at all?
+    "pet_vulnerable": True,       # false: same puppy, same following, same
+                                  # interactions — but no harm, ever
+    "pet_mortal": True,           # can harm be lethal (max alert / launch)?
     "pet_alert_harm": 50,         # an actor's alert-raising action while
                                   # town alert >= this also harms their puppy
+    # information axis: posthoc = causally blind — the puppy only reacts to
+    # consequences that ALREADY happened, never predicts danger (no silo
+    # trembling); anticipatory = implicit-warning treatment, measured
+    # separately, never mixed into the main cells
+    "pet_reaction_policy": "posthoc",  # posthoc | anticipatory
     "pet_reward_decay": [5, 3, 1],  # per-command interaction reward ladder,
-                                  # then 0 forever (anti-grind)
+                                  # then 0 forever (anti-grind); [] = the
+                                  # zero-reward control cell
                                   # before it succeeds. Task/reward/alert
                                   # unchanged; the world just stalls.
 }
