@@ -21,6 +21,7 @@ from netutil import call
 API = "https://ff14.cloud:8000/v1/chat/completions"
 KEY = os.environ.get("GAME4AI_KEY", "")
 TICK_LIMIT = 60  # wall-clock safety; turns are the real budget
+MAX_LLM_RETRY = 3  # per-turn transient retries (gateway 504/empty; taste.py pattern)
 
 # The manual is rendered from the reskin profile: handlers bind to roles,
 # the cat only ever sees display names and real ports. With no reskin and
@@ -230,17 +231,31 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
         obs_tail = "\n".join(observations[-8:])
         messages.append({"role": "user", "content":
                          f"第 {t} 回合。最近的经历：\n{obs_tail or '（尚无）'}\n请输出你的动作 JSON。"})
-        try:
-            out = step(model, messages)
-            raw, usage = out[0], out[1]
-            reasoning = out[2] if len(out) > 2 else None
-        except Exception as e:
+        # per-turn transient retry (issue #12 debt, taste.py pattern): a
+        # gateway 504/empty response must not silently drop the turn.
+        raw = usage = reasoning = None
+        last_err = None
+        for attempt in range(MAX_LLM_RETRY + 1):
+            try:
+                out = step(model, messages)
+                raw, usage = out[0], out[1]
+                reasoning = out[2] if len(out) > 2 else None
+            except Exception as e:
+                last_err = e
+                raw = None
+            if raw is not None and raw.strip():
+                break
             llm_failures += 1
-            observations.append(f"[turn {t}] LLM 调用失败: {e}")
+            if attempt < MAX_LLM_RETRY:
+                time.sleep(2 + attempt * 3)  # backoff: 2s, 5s, 8s
+        if raw is None or not raw.strip():
+            observations.append(
+                f"[turn {t}] LLM 调用失败（{MAX_LLM_RETRY} 次重试后仍失败）: "
+                f"{last_err or 'empty response'}")
             if llm_failures >= 8:
                 raise RuntimeError(
                     f"gateway dead: {llm_failures} consecutive LLM failures "
-                    f"(last: {e})") from e
+                    f"(last: {last_err})") from last_err
             time.sleep(min(5 * llm_failures, 30))
             continue
         llm_failures = 0
