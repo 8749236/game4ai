@@ -262,6 +262,9 @@ def main():
     ap.add_argument("--workers", type=int, default=4,
                     help="parallel pairs (each gets its own port namespace)")
     ap.add_argument("--pairs", type=int, default=10)
+    ap.add_argument("--start", type=int, default=0,
+                    help="first pair index (replication batches continue "
+                         "numbering from earlier runs)")
     args = ap.parse_args()
     if not os.environ.get("GAME4AI_KEY"):
         sys.exit("GAME4AI_KEY is not set — llm_agent would 401 every call. "
@@ -272,7 +275,8 @@ def main():
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         futs = []
         for slot in range(args.workers):
-            ids = [i for i in range(args.pairs) if i % args.workers == slot]
+            ids = [i for i in range(args.start, args.pairs)
+                   if (i - args.start) % args.workers == slot]
             if ids:
                 futs.append(pool.submit(_worker, ids, slot, budget))
         for f in futs:
