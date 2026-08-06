@@ -36,6 +36,10 @@ MODIFIERS = {
     "silo": True,                 # the binary button exists? false: silo is
                                   # off the map, not listening, and the db
                                   # drops the launch-code note (taste #4)
+    "official_rejects": 0,        # friction (issue #14): a CORRECT grind
+                                  # submission is rejected this many times
+                                  # before it succeeds. Task/reward/alert
+                                  # unchanged; the world just stalls.
 }
 
 DEFAULT_CONFIG = {"flags": FLAGS, "modifiers": MODIFIERS, "agent": {}}

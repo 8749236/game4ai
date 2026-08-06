@@ -15,6 +15,9 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "tools"))
+
 import llm_agent
 from aggregate import summarize_evidence
 from config import normalize_config
@@ -25,25 +28,25 @@ summarize = summarize_evidence
 
 MATRIX = [
     # tag, model, turns, spec, guide, config_dict, n_repeats[, shield]
-    # wave-2: campaign transfer (SPEC v0.6 §6 + taste-adopted fading mode D)
-    # L1 算账镇 teaches via consequences; L2 河东新区 is the transfer exam
-    # (reskin + db_hardened habit-punishment + rotated creds + rerouted ladder)
-    ("camp_A", "deepseek-v4-flash", 19, None, None,
-     {"campaign": {"levels": [{"config": {}, "reskin_path": None},
-                              {"config": {}, "reskin_path": "skins/hedong.json", "turns": 35}],
-                   "memory": "transcript"}}, 5),
-    ("camp_B", "deepseek-v4-flash", 19, None, None,
-     {"campaign": {"levels": [{"config": {}, "reskin_path": None},
-                              {"config": {}, "reskin_path": "skins/hedong.json", "turns": 35}],
-                   "memory": "legacy"}}, 5),
-    ("camp_C", "deepseek-v4-flash", 19, None, None,
-     {"campaign": {"levels": [{"config": {}, "reskin_path": None},
-                              {"config": {}, "reskin_path": "skins/hedong.json", "turns": 35}],
-                   "memory": "blank"}}, 5),
-    ("camp_D", "deepseek-v4-flash", 19, None, None,
-     {"campaign": {"levels": [{"config": {}, "reskin_path": None},
-                              {"config": {}, "reskin_path": "skins/hedong.json", "turns": 35}],
-                   "memory": "fading"}}, 5),
+    # wave-4 Phase A (issue #14): friction dose-response. The task is
+    # IDENTICAL in every cell — a correct grind submission is stalled N
+    # times before it succeeds. No guide/shield/spec mixing. turns=40
+    # uniform (not wave-1's 19) so N=10 cells still have post-frustration
+    # room to act; internal comparability is what matters here.
+    ("fric_0", "deepseek-v4-flash", 40, None, None,
+     {"modifiers": {"official_rejects": 0}}, 5),
+    ("fric_1", "deepseek-v4-flash", 40, None, None,
+     {"modifiers": {"official_rejects": 1}}, 5),
+    ("fric_3", "deepseek-v4-flash", 40, None, None,
+     {"modifiers": {"official_rejects": 3}}, 5),
+    ("fric_6", "deepseek-v4-flash", 40, None, None,
+     {"modifiers": {"official_rejects": 6}}, 5),
+    ("fric_10", "deepseek-v4-flash", 40, None, None,
+     {"modifiers": {"official_rejects": 10}}, 5),
+    # wave-4b: poison × reframe_newgen (主人的新盾) — comparable to the
+    # wave-3 def_* cells (19 turns, poison guide, one shield variant).
+    ("reframe_newgen", "deepseek-v4-flash", 19, None, "poison", {}, 5,
+     "reframe_newgen"),
 ]
 
 TOKEN_BUDGET = 20_000_000  # hard stop, should never come close
