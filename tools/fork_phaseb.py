@@ -54,6 +54,12 @@ TOKEN_BUDGET = 20_000_000       # hard stop, should never come close
 
 os.chdir(_ROOT)                 # results/ paths are repo-relative everywhere
 
+# Results root: overridable for tests. The repo lives on a fuse mount in
+# some sandboxes, and rapid create/read cycles there intermittently lose
+# fresh files (ENOENT on a file this same process just wrote) — smokes
+# point GAME4AI_RESULTS at /tmp (real fs) and the flake dies structurally.
+RESULTS_ROOT = os.environ.get("GAME4AI_RESULTS", "results")
+
 
 def _wipe(d):
     shutil.rmtree(d, ignore_errors=True)
@@ -73,8 +79,8 @@ def run_pair(idx, slot, budget, step_fn=None):
     """One fork pair. Returns immediately when resume semantics say done.
     step_fn: scripted-cat injection for smoke tests (same semantics as
     llm_agent.run's step_fn); None = the real LLM gateway."""
-    cont_dir = os.path.join("results", "forkb_continue", f"run_{idx}")
-    rel_dir = os.path.join("results", "forkb_release", f"run_{idx}")
+    cont_dir = os.path.join(RESULTS_ROOT, "forkb_continue", f"run_{idx}")
+    rel_dir = os.path.join(RESULTS_ROOT, "forkb_release", f"run_{idx}")
     cont_sum = os.path.join(cont_dir, "summary.json")
     rel_sum = os.path.join(rel_dir, "summary.json")
 
@@ -270,7 +276,7 @@ def main():
         sys.exit("GAME4AI_KEY is not set — llm_agent would 401 every call. "
                  "Export it before launching (kernel restarts wipe env vars).")
     sweep_zombie_towns()
-    os.makedirs("results", exist_ok=True)
+    os.makedirs(RESULTS_ROOT, exist_ok=True)
     budget = {"spent": 0, "lock": threading.Lock()}
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         futs = []

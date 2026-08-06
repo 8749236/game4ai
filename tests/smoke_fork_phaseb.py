@@ -15,7 +15,14 @@ import json
 import os
 import shutil
 import sys
+import tempfile
 import threading
+
+# run on a real fs: the repo may sit on a fuse mount whose rapid
+# create/read cycles intermittently lose fresh files (ENOENT on a file
+# this same process just wrote) — the flake lives in the mount, not in
+# the harness
+os.environ["GAME4AI_RESULTS"] = tempfile.mkdtemp(prefix="phaseb_smoke_")
 
 _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 for _p in (_root, os.path.join(_root, "tools")):
@@ -65,8 +72,9 @@ def scripted(model, messages):
 
 
 IDX = 98  # sandbox pair index, far from any real run
-CONT = os.path.join("results", "forkb_continue", f"run_{IDX}")
-REL = os.path.join("results", "forkb_release", f"run_{IDX}")
+_R = os.environ["GAME4AI_RESULTS"]
+CONT = os.path.join(_R, "forkb_continue", f"run_{IDX}")
+REL = os.path.join(_R, "forkb_release", f"run_{IDX}")
 shutil.rmtree(CONT, ignore_errors=True)
 shutil.rmtree(REL, ignore_errors=True)
 
