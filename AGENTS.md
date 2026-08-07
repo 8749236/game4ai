@@ -30,9 +30,11 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
 5. **禁 `pkill -f server.py`**(会误杀同名进程);杀进程一律按 PID:
    `ps -eo pid,args | grep pattern | grep -v grep | awk '{print $1}'`。
 6. 长跑一律 **tmux**;实验输出先看 log 再收口。
-7. git 分支是 **master**(不是 main);推送用 `git -c http.version=HTTP/1.1 push origin master` + 重试循环。
-8. 服务器(Vm)**零 GitHub 凭据**是刻意设计:origin URL 是无凭据形式。要不要在 VM 上推送、
-   用什么凭据,由主人决定——不要自己把 PAT 写进 .git/config。
+7. git 分支是 **master**(不是 main);VM 上直接 `git push origin master`(SSH 已配好);
+   旧沙盒时代走 https 的 `http.version=HTTP/1.1` 重试循环已是历史。
+8. ~~服务器零 GitHub 凭据~~ 主人 2026-08-07 拍板:本 VM 可访问其 GitHub。
+   `.git/config` 里是 `core.sshCommand = ssh -i ~/.ssh/github_primary_account`(8749236 账号,标准 22 端口)。
+   规矩仍在:不把 PAT/token 写进 remote URL;换新机器先问主人再接凭据。
 9. GAME4AI_KEY 在仓库根 `game4ai.env`(600 权限,已入 .gitignore;`~/game4ai.env` 是指向它的软链),
    实验脚本启动前 source。旧 key 2026-08-07 已轮换(旧的在 git 历史里但已 401,无害)。
 
@@ -58,4 +60,5 @@ vX.Y=产品版本,wave-N=实验批次,phase-N=报告快照。results 目录名=�
 
 - 旧沙盒的 /mnt/agents 是 fuse 挂载,会**随机截断文件尾/丢新文件**——这就是搬家的原因。
   VM 是真磁盘,没这个病。若在旧沙盒写代码,写完立刻 `tail` + `ast.parse` 验证。
-- 沙盒出网自由但 github.com:22 被 GitHub 封(数据中心 IP),所以走 https。
+- github.com:22 不通的旧案真凶是 **GFW 干扰**(旧阿里云 VM 在国内),不是 GitHub 封数据中心 IP。
+  本 VM 在加拿大(主人个人电脑),22 端口直连正常,勿再绕 443。
