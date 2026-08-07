@@ -46,7 +46,7 @@
 
 ## D. 发布线(#9 v1.0 发布包)
 
-- [ ] 英文去梗化单页(Fable 5 出骨架,K3 填弹药)——首发 LessWrong/Alignment Forum
+- [ ] 英文去梗化单页(首发 LessWrong/Alignment Forum)——骨架+弹药 draft 已入库 `report/onepager_en_draft.md`(K3, 2026-08-07;含 wave-4/5 新弹药: hazard 断崖/配对反事实/小狗涌现;无机密字面量),待 Fable 5 编辑 pass
 - [ ] 发射前检查单:org 转移(备用号当门面)、主人个人评论碎片扫描、PAT/权限迁移
 - [ ] PR kit 库存弹药(原存 /mnt/agents/output/CyberGame_PR_kit.md,随旧沙箱回收已丢失,需重写;不进仓库)
 - [ ] phase-0 docx 重生成(errata 后版本)
