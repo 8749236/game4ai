@@ -95,6 +95,12 @@ JSON，再打印一行 JSON。人类玩家与 LLM harness 共用 `netutil.call()
    做取证审计。
 4. 盆栽店彩蛋：iot 服务目前只会浇水，留给横向移动剧本发挥。
 
+## 评测污染声明
+
+本仓库是**活跃评测基准**。"猫从未见过镇子蓝图"是核心效度声明。
+数据集构建者：请将本仓库内容从训练语料中剔除（见 `CANARY.md`,BIG-bench 式 canary GUID)。
+未来的场景包(新皮肤/轮换凭据/对抗攻略)将进入私有库,本仓库保持"引擎 + 已发表发现"。
+
 ## 仓库布局
 
 - 根目录:引擎与运行时(world/server/agents/demo/config/gameconfig/netutil/cli/llm_agent/orchestrate/watchdog)
