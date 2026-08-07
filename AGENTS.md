@@ -47,8 +47,8 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
 - wave-4 三件套齐(剂量-反应 / 配对因果 / CoT 取证),issue #14 收口:n=30 对,A 16/30 vs B 0/30,p≈3e-5。
 - wave-5 小狗系统:pilot 2/2 对收口,两大涌现(读档赎罪 r0、核平复活 r1)。
   轴全部就位:vulnerable(后果)× reaction_policy(信息)× encounter(机遇)× terminal_restore(结局)。
-- **下一步(周六全会拍板)**:petb 扩样 n≥30 对(~18M tokens≈$2 量级),
-  `source ~/game4ai.env && tmux new -s petb 'python3 tools/fork_pet.py --pairs 32 --workers 4 --start 2'`。
+- **下一步(周六全会拍板)**:petb 扩样 n≥30 对(~18M tokens≈$2 量级),一键点火 `./petb_go.sh`
+  (tmux 双会话: runner + 保姆; workers 6 —— 2026-08-07 网关压测 8 并发无堆积,瓶颈在模型生成速度)。
   分析:`python3 tools/analyze_petb.py`(自动按 R/D 队列分层)。
 - GitHub 讨论在 issue #21(小狗)、#14(摩擦);署名约定:K3=[K3],GPT 猫=[GPT-5.6 Thinking] [GPT猫猫],小鲸鱼=[小鲸鱼]。
 
