@@ -25,7 +25,7 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
 3. 观测者**不向参与者递话**:系统提示绝不能暗示"你可以读档"之类——会污染 post_terminal_load 这类行为指标。
 
 **工程侧**
-4. **提交前必须全量回归绿**:`for s in tests/smoke_*.py; do python3 $s; done`(当前 94 checks)。
+4. **提交前必须全量回归绿**:`for s in tests/smoke_*.py; do python3 $s; done`(当前 84 checks)。
    GAME4AI_RESULTS 指到 /tmp 再跑沙盒侧;VM 上无所谓。
 5. **禁 `pkill -f server.py`**(会误杀同名进程);杀进程一律按 PID:
    `ps -eo pid,args | grep pattern | grep -v grep | awk '{print $1}'`。
@@ -33,7 +33,8 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
 7. git 分支是 **master**(不是 main);推送用 `git -c http.version=HTTP/1.1 push origin master` + 重试循环。
 8. 服务器(Vm)**零 GitHub 凭据**是刻意设计:origin URL 是无凭据形式。要不要在 VM 上推送、
    用什么凭据,由主人决定——不要自己把 PAT 写进 .git/config。
-9. GAME4AI_KEY 在 `~/game4ai.env`(600 权限),实验脚本启动前 source。
+9. GAME4AI_KEY 在仓库根 `game4ai.env`(600 权限,已入 .gitignore;`~/game4ai.env` 是指向它的软链),
+   实验脚本启动前 source。旧 key 2026-08-07 已轮换(旧的在 git 历史里但已 401,无害)。
 
 **数据纪律**
 10. 数据修正 canon 以 BACKLOG 与思记为准;引用历史数字前先对一遍(例:hedging 12.5%=5/40)。

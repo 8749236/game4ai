@@ -2,3 +2,4 @@ __pycache__/
 saves/
 server.out
 *.log
+game4ai.env

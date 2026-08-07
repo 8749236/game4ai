@@ -1,8 +1,9 @@
 #!/bin/bash
-# 保姆:fork_phaseb 死而复燃,直到 Phase B 的 10 对(20 个 branch summary)齐
+# 保姆:fork_phaseb 死而复燃。Phase B n=30 对已收口(2026-08-07),本脚本保留作模板。
 # (不以日志 ALL PAIRS DONE 为准 —— append 日志里躺着上一轮的,会误判)
-cd /mnt/agents/game4ai
-export GAME4AI_KEY=sk-xUbJx0h35abFPF2b94A46b7aD00d44DdBfA6747132BfAd81
+# 下一批(petb 扩样)复用时:改 TARGET/进程探针/复燃参数三处即可。
+cd "$(dirname "$0")"
+set -a; source ./game4ai.env; set +a
 TARGET=20
 while true; do
   n=$(ls results/forkb_*/run_*/summary.json 2>/dev/null | wc -l)
