@@ -40,7 +40,9 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
 
 **数据纪律**
 10. 数据修正 canon 以 BACKLOG 与思记为准;引用历史数字前先对一遍(例:hedging 12.5%=5/40)。
-11. reasoning_content 只进 transcript,**绝不回喂** message 历史(provider 语义)。
+11. reasoning_content 只进 transcript,**绝不回喂** message 历史(provider 语义:无工具调用时
+    思维链跨轮即弃,回传也被忽略)。**例外预警**:若未来 harness 改用原生 tool calling,
+    工具链内的 reasoning_content 必须回传,否则 API 400——届时此红线需按轮次细化。
 
 ## 当前状态(2026-08-07)
 
