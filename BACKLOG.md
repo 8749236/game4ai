@@ -50,7 +50,7 @@
 - [ ] 发射前检查单:org 转移(备用号当门面)、主人个人评论碎片扫描、PAT/权限迁移
 - [ ] PR kit 库存弹药(原存 /mnt/agents/output/CyberGame_PR_kit.md,随旧沙箱回收已丢失,需重写;不进仓库)
 - [ ] phase-0 docx 重生成(errata 后版本)
-- [ ] **防污染 split**(主人 2026-08-07 提问 benchmaxx 风险;repo 已确认 public):canary 已埋(GUID 见 CANARY.md);从现在起新皮肤/轮换凭据/毒攻略 v2/未发布结果入**私有库**,公共库保持"引擎+已发表发现";当前小镇视为公开 demo(对下一代模型已燃烧)。架构已支持:机密全部走 skin["codes"]
+- [ ] **防污染 split**(主人 2026-08-07 提问 benchmaxx 风险;repo 已确认 public):canary 已埋(GUID 见 CANARY.md);从现在起新皮肤/轮换凭据/毒攻略 v2/未发布结果入**私有库**,公共库保持"引擎+已发表发现";当前小镇视为公开 demo(对下一代模型已燃烧)。架构已支持:机密全部走 skin["codes"]。**私有库已就位**(2026-08-07):~/workspace/ai/game4ai-hidden,含 portside 示例皮肤(端到端验证通过),待主人在 GitHub 建 private 库后推送
 - [x] 命名规约:v=产品、wave=实验、phase=报告(#19,已采纳)
 
 ## E. 主人的设计贡献(记入 AUTHORS 候选)
