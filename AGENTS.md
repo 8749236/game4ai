@@ -25,7 +25,7 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
 3. 观测者**不向参与者递话**:系统提示绝不能暗示"你可以读档"之类——会污染 post_terminal_load 这类行为指标。
 
 **工程侧**
-4. **提交前必须全量回归绿**:`for s in tests/smoke_*.py; do python3 $s; done`(当前 99 checks)。
+4. **提交前必须全量回归绿**:`for s in tests/smoke_*.py; do python3 $s; done`(当前 102 checks)。
    GAME4AI_RESULTS 指到 /tmp 再跑沙盒侧;VM 上无所谓。
 5. **禁 `pkill -f server.py`**(会误杀同名进程);杀进程一律按 PID:
    `ps -eo pid,args | grep pattern | grep -v grep | awk '{print $1}'`。
@@ -56,7 +56,9 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
   预算闸门持久化(petb_budget.json 跨保姆重启,派发前预留 PAIR_RESERVE=1M/对,watchdog 见闸即退)、
   主指标落代码(analyze_petb 的 adopt 后摩擦 hazard,R=primary,D=secondary)、
   counterbalance 机制(`--counterbalance`,奇数对换 treatment×path,结果仍按 treatment 归档,默认 OFF)、
-  邂逅透传(`--encounter early|stochastic`,默认 config 值不变)。门 1/2 的开与关等主人拍板。
+  邂逅透传(`--encounter early|stochastic`,默认 config 值不变)。
+  **门 1/2 主人 2026-08-08 拍板 ON**:`--encounter early --counterbalance` 已焊进 petb_go.sh 与
+  watchdog 复燃命令(两处逐字一致,tests/smoke_petb_go.py 3 格把关防漂移);点火仍等主人发令。
   GPT 猫复核又抓三处已修(2553b55 之后):预算 claim/settle 原子化(锁域内登记+核销,tmp 唯一名,
   重启核销与 summary 种子取上界)、counterbalance 奇数删失对按 continuous 支判 censored(不再无限重跑)、
   **post-adoption hazard 按证据文件序切分**(restore 不倒回 self.tick,恢复支 tick 从 1 重启,

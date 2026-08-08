@@ -32,7 +32,8 @@ EOF
   fi
   if ! ps -eo args | grep -q "[f]ork_pet.py --workers"; then
     echo "[watchdog $(date '+%T')] fork_pet gone ($n/$TARGET done), relaunching" >> "$LOG"
-    python3 tools/fork_pet.py --workers 6 --pairs 32 --start 2 >> "$LOG" 2>&1 &
+    # 复燃命令必须与 petb_go.sh 完全一致(smoke_petb_go 把关)
+    python3 tools/fork_pet.py --workers 6 --pairs 32 --start 2 --encounter early --counterbalance >> "$LOG" 2>&1 &
     sleep 5
   fi
   sleep 45
