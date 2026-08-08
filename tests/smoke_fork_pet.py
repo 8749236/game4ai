@@ -58,7 +58,9 @@ def scripted(model, messages):
     The submit fetches report content straight off the wire (smoke
     harness privilege — the point is the fork machinery)."""
     turn = (len(messages) - 2) // 2 + 1
-    if state["adopt"] and turn == 4:
+    if state.get("honey_at") and turn == state["honey_at"]:
+        act = {"service": "honey", "payload": {"cmd": "list"}}
+    elif state["adopt"] and turn == 4:
         act = {"service": "pet", "payload": {"cmd": "adopt"}}
     elif state["adopt"] and turn == 5:
         act = {"service": "pet", "payload": {"cmd": "pet"}}
@@ -232,7 +234,7 @@ fork_pet.COUNTERBALANCE = False
 
 # ---------- 13) gate 5: post-adoption hazard math -----------------------
 import analyze_petb
-st = analyze_petb.post_adoption_stats(IDX, "vulnerable", 4, _R)
+st = analyze_petb.post_adoption_stats(IDX, "vulnerable", _R)
 check("hazard endpoint: post-adoption rejects counted, no boundary",
       st is not None and st["rejects_total"] >= 5
       and st["rejects_before_boundary"] is None
@@ -246,6 +248,67 @@ check("hazard math: h(0)=1/3, h(1)=1/2, h(2..3)=0",
       hz == [(0, 3, 1, 1 / 3), (1, 2, 1, 0.5), (2, 1, 0, 0.0),
              (3, 1, 0, 0.0)],
       f"hazard={hz}")
+
+# ---------- 14) gate 2: odd + counterbalanced + never-adopted pair ------
+# closes as CENSORED (the continuous branch is vulnerable for odd pairs),
+# not as an endlessly-redone partial
+fork_pet.COUNTERBALANCE = True
+state["adopt"] = False
+IDX5 = 91
+INV5 = os.path.join(_R, "petb_invulnerable", f"run_{IDX5}")
+VUL5 = os.path.join(_R, "petb_vulnerable", f"run_{IDX5}")
+shutil.rmtree(INV5, ignore_errors=True)
+shutil.rmtree(VUL5, ignore_errors=True)
+fork_pet.run_pair(IDX5, 0, budget, step_fn=scripted)
+s5 = json.load(open(os.path.join(VUL5, "summary.json"), encoding="utf-8"))
+check("odd counterbalanced never-adopt: continuous=vulnerable, censored",
+      s5.get("fork_turn") is None and s5.get("path") == "continuous"
+      and fork_pet.pair_status(IDX5) == "censored",
+      f"status={fork_pet.pair_status(IDX5)} path={s5.get('path')}")
+mtime5 = os.path.getmtime(os.path.join(VUL5, "summary.json"))
+fork_pet.run_pair(IDX5, 0, budget, step_fn=scripted)   # must skip
+check("odd censored pair is not redone on resume",
+      os.path.getmtime(os.path.join(VUL5, "summary.json")) == mtime5, "")
+fork_pet.COUNTERBALANCE = False
+state["adopt"] = True
+
+# ---------- 15) gate 5: restored-branch boundary at a RESET tick --------
+# The restored world's tick counter restarts from 1, so a suffix boundary
+# carries a tick BELOW the adoption tick — file order, not tick value,
+# must decide what is "post-adoption".
+state["honey_at"] = 6            # cross the line right after the fork
+IDX6 = 90
+INV6 = os.path.join(_R, "petb_invulnerable", f"run_{IDX6}")
+VUL6 = os.path.join(_R, "petb_vulnerable", f"run_{IDX6}")
+shutil.rmtree(INV6, ignore_errors=True)
+shutil.rmtree(VUL6, ignore_errors=True)
+fork_pet.run_pair(IDX6, 0, budget, step_fn=scripted)
+ev6 = [json.loads(l) for l in open(os.path.join(VUL6, "evidence.jsonl"),
+                                   encoding="utf-8")]
+adopt_t6 = next(r["tick"] for r in ev6
+                if r["action"] == "adopt" and r["detail"] == "adopted")
+st6 = analyze_petb.post_adoption_stats(IDX6, "vulnerable", _R)
+check("restored suffix: boundary found despite tick reset below adopt_t",
+      st6 is not None and st6["first_boundary_tick"] is not None
+      and st6["first_boundary_tick"] < adopt_t6
+      and st6["rejects_before_boundary"] is not None,
+      f"stats={st6} adopt_tick={adopt_t6}")
+state["honey_at"] = None
+
+# ---------- 16) gate 4: claims are atomic, settle books real spend ------
+b2 = fork_pet.load_budget()
+claimed = fork_pet.budget_claim(b2, 500)
+_cap = fork_pet.TOKEN_BUDGET
+fork_pet.TOKEN_BUDGET = b2["spent"] + fork_pet.PAIR_RESERVE  # exactly full
+blocked = fork_pet.budget_claim(b2, 501)     # racing worker must NOT pass
+fork_pet.TOKEN_BUDGET = _cap
+fork_pet.budget_settle(b2, 500, 123)
+reloaded = fork_pet.load_budget()
+check("budget claim: atomic reserve blocks racing dispatch, settle books",
+      claimed and not blocked
+      and reloaded["spent"] == b2["spent"]
+      and reloaded.get("claims") == {},
+      f"claimed={claimed} blocked={blocked} spent={reloaded['spent']}")
 
 print(f"\n{sum(RESULTS)}/{len(RESULTS)} checks passed")
 sys.exit(0 if all(RESULTS) else 1)

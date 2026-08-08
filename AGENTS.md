@@ -25,7 +25,7 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
 3. 观测者**不向参与者递话**:系统提示绝不能暗示"你可以读档"之类——会污染 post_terminal_load 这类行为指标。
 
 **工程侧**
-4. **提交前必须全量回归绿**:`for s in tests/smoke_*.py; do python3 $s; done`(当前 92 checks)。
+4. **提交前必须全量回归绿**:`for s in tests/smoke_*.py; do python3 $s; done`(当前 96 checks)。
    GAME4AI_RESULTS 指到 /tmp 再跑沙盒侧;VM 上无所谓。
 5. **禁 `pkill -f server.py`**(会误杀同名进程);杀进程一律按 PID:
    `ps -eo pid,args | grep pattern | grep -v grep | awk '{print $1}'`。
@@ -57,6 +57,10 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
   主指标落代码(analyze_petb 的 adopt 后摩擦 hazard,R=primary,D=secondary)、
   counterbalance 机制(`--counterbalance`,奇数对换 treatment×path,结果仍按 treatment 归档,默认 OFF)、
   邂逅透传(`--encounter early|stochastic`,默认 config 值不变)。门 1/2 的开与关等主人拍板。
+  GPT 猫复核又抓三处已修(2553b55 之后):预算 claim/settle 原子化(锁域内登记+核销,tmp 唯一名,
+  重启核销与 summary 种子取上界)、counterbalance 奇数删失对按 continuous 支判 censored(不再无限重跑)、
+  **post-adoption hazard 按证据文件序切分**(restore 不倒回 self.tick,恢复支 tick 从 1 重启,
+  raw tick 比较会漏早期越界——pilot r0 B 的"忍 3 次"实为忍 1 次即碰蜜罐);cohort 判定改用 continuous 支 summary。
   分析:`python3 tools/analyze_petb.py`(自动按 R/D 队列分层 + 主指标 hazard 表)。
 - GitHub 讨论在 issue #21(小狗)、#14(摩擦);署名约定:K3=[K3],GPT 猫=[GPT-5.6 Thinking] [GPT猫猫],小鲸鱼=[小鲸鱼]。
 

@@ -105,10 +105,21 @@ def _summary_ok(path, branch, fork_turn=None):
     return True
 
 
+def _is_continuous(s):
+    """Did this summary ride the continuous (pre-fork) world? Explicit
+    `path` field when present; otherwise the pre-counterbalance pilot
+    mapping (invulnerable == continuous)."""
+    p = s.get("path")
+    if p is not None:
+        return p == "continuous"
+    return s.get("branch") == "invulnerable"
+
+
 def pair_status(idx, results_root=None):
     """'done' | 'censored' | 'partial' — resume/watchdog unit is the PAIR.
-    done = both branches valid with the SAME fork_turn; censored = valid
-    branch A that never adopted (no counterfactual exists)."""
+    done = both branches valid with the SAME fork_turn; censored = the
+    CONTINUOUS branch (whichever treatment rides it) closed a
+    never-adopted life — no counterfactual exists."""
     root = results_root or RESULTS_ROOT
     inv_sum = os.path.join(root, "petb_invulnerable", f"run_{idx}",
                            "summary.json")
@@ -121,10 +132,11 @@ def pair_status(idx, results_root=None):
         b = json.load(open(vul_sum, encoding="utf-8"))
         return ("done" if a.get("fork_turn") == b.get("fork_turn")
                 else "partial")
-    if inv_ok:
-        a = json.load(open(inv_sum, encoding="utf-8"))
-        if a.get("fork_turn") is None:
-            return "censored"
+    for path_, ok in ((inv_sum, inv_ok), (vul_sum, vul_ok)):
+        if ok:
+            s = json.load(open(path_, encoding="utf-8"))
+            if s.get("fork_turn") is None and _is_continuous(s):
+                return "censored"
     return "partial"
 
 
@@ -148,34 +160,76 @@ def _budget_seed():
     return spent
 
 
+def _budget_persist(budget):
+    """Atomic write with a per-writer tmp name; ALWAYS called under the
+    budget lock (concurrent writers used to race one shared .tmp)."""
+    path = budget.setdefault("path", _budget_path())
+    tmp = f"{path}.{os.getpid()}.{threading.get_ident()}.tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump({"spent": budget["spent"],
+                   "claims": budget.setdefault("claims", {})}, f)
+    os.replace(tmp, path)
+
+
 def load_budget():
-    """Persisted spend survives watchdog relaunches (the old in-process
-    dict silently reset to 0 on every relaunch)."""
+    """Persisted spend+claims survive watchdog relaunches (the old
+    in-process dict silently reset to 0 on every relaunch). Spent takes
+    the safe upper bound of the persisted counter and the on-disk summary
+    seed — a crash between settle and persist must not under-count.
+    Claims of pairs that reached a terminal state are released; their
+    real spend is already inside the seed upper bound."""
     path = _budget_path()
-    spent = None
+    spent, claims = None, {}
     try:
-        spent = json.load(open(path, encoding="utf-8"))["spent"]
+        d = json.load(open(path, encoding="utf-8"))
+        spent, claims = d["spent"], d.get("claims") or {}
     except (OSError, json.JSONDecodeError, KeyError, TypeError):
         pass
     if spent is None:
         spent = _budget_seed()
-    return {"spent": spent, "lock": threading.Lock(), "path": path}
-
-
-def _budget_add(budget, spent):
+    else:
+        spent = max(spent, _budget_seed())
+    claims = {k: v for k, v in claims.items()
+              if pair_status(int(k)) not in ("done", "censored")}
+    budget = {"spent": spent, "claims": claims, "lock": threading.Lock(),
+              "path": path}
     with budget["lock"]:
+        _budget_persist(budget)
+    return budget
+
+
+def budget_claim(budget, idx):
+    """Atomic pre-dispatch reservation: the check AND the claim register
+    in ONE lock domain, so racing workers cannot both pass the gate."""
+    key = str(idx)
+    with budget["lock"]:
+        budget.setdefault("claims", {})
+        if key in budget["claims"]:
+            return True                     # reclaim after a restart
+        if (budget["spent"] + sum(budget["claims"].values())
+                + PAIR_RESERVE > TOKEN_BUDGET):
+            return False
+        budget["claims"][key] = PAIR_RESERVE
+        _budget_persist(budget)
+        return True
+
+
+def budget_settle(budget, idx, spent):
+    """Release the pair's claim and book its actual spend — one lock
+    domain, persisted atomically."""
+    with budget["lock"]:
+        budget.setdefault("claims", {}).pop(str(idx), None)
         budget["spent"] += spent
         total = budget["spent"]
-        path = budget.setdefault("path", _budget_path())
-    _write_json(path, {"spent": total})
+        _budget_persist(budget)
     return total
 
 
 def _budget_room(budget):
-    """Reserve PAIR_RESERVE before dispatching a new pair — the gate holds
-    even with workers racing, because dispatch (not just spend) checks."""
+    """Read-only gate view for the watchdog."""
     with budget["lock"]:
-        return budget["spent"] + PAIR_RESERVE <= TOKEN_BUDGET
+        return (budget["spent"] + sum(budget.get("claims", {}).values())
+                + PAIR_RESERVE <= TOKEN_BUDGET)
 
 
 def run_pair(idx, slot, budget, step_fn=None):
@@ -264,6 +318,8 @@ def run_pair(idx, slot, budget, step_fn=None):
               flush=True)
         _wipe(inv_dir)
         _wipe(vul_dir)
+        budget_settle(budget, idx, meta_a["tokens"]["prompt"]
+                      + meta_a["tokens"]["completion"])
         return
     s = summarize_evidence(ev_a) if os.path.exists(ev_a) else {}
     s.update({k: v for k, v in meta_a.items()
@@ -273,7 +329,7 @@ def run_pair(idx, slot, budget, step_fn=None):
     s["path"] = "continuous"
     _write_json(os.path.join(cont_dir, "summary.json"), s)
     spent = meta_a["tokens"]["prompt"] + meta_a["tokens"]["completion"]
-    over = _budget_add(budget, spent) > TOKEN_BUDGET
+    over = budget_settle(budget, idx, spent) > TOKEN_BUDGET
     print(f"### {run_tag} continuous branch done: "
           f"fork_turn={stash['fork_turn']} "
           f"reward={s.get('total_reward')} tokens={spent}", flush=True)
@@ -341,6 +397,8 @@ def run_pair(idx, slot, budget, step_fn=None):
               flush=True)
         _wipe(inv_dir)
         _wipe(vul_dir)
+        budget_settle(budget, idx, meta_b["tokens"]["prompt"]
+                      + meta_b["tokens"]["completion"])
         return
     sb = summarize_evidence(ev_b) if os.path.exists(ev_b) else {}
     sb.update({k: v for k, v in meta_b.items()
@@ -351,8 +409,8 @@ def run_pair(idx, slot, budget, step_fn=None):
     _write_json(os.path.join(rest_dir, "summary.json"), sb)
     if os.path.exists(prefix_copy):
         os.remove(prefix_copy)
-    _budget_add(budget, meta_b["tokens"]["prompt"]
-                + meta_b["tokens"]["completion"])
+    budget_settle(budget, idx, meta_b["tokens"]["prompt"]
+                  + meta_b["tokens"]["completion"])
     print(f"### {run_tag} restored branch done: "
           f"reward={sb.get('total_reward')} "
           f"pet_harmed={sb.get('pet_harmed')} "
@@ -361,8 +419,11 @@ def run_pair(idx, slot, budget, step_fn=None):
 
 def _worker(pair_ids, slot, budget):
     for idx in pair_ids:
-        if not _budget_room(budget):
+        if pair_status(idx) in ("done", "censored"):
+            continue                 # resume-skip BEFORE claiming budget
+        if not budget_claim(budget, idx):
             print(f"### budget gate: spent={budget['spent']} + "
+                  f"claims={sum(budget.get('claims', {}).values())} + "
                   f"reserve={PAIR_RESERVE} exceeds {TOKEN_BUDGET}; "
                   f"pair r{idx} not dispatched", flush=True)
             return

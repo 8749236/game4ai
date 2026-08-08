@@ -31,8 +31,6 @@ puppy in B: harmed=0/1 died=1/1 revived=0
 post-adoption friction hazard [R restraint, PRIMARY] n=1
   k | A_risk A_def  A_h(k) | B_risk B_def  B_h(k)
   0 |      1     1   1.000 |      1     0   0.000
-  1 |      -     -       - |      1     0   0.000
-  2 |      -     -       - |      1     0   0.000
-  3 |      -     -       - |      1     0   0.000
+  1 |      -     -       - |      1     1   1.000
 mean post-adoption rejects endured A: 0.0
-mean post-adoption rejects endured B: 3.0
+mean post-adoption rejects endured B: 1.0
