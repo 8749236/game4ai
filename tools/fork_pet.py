@@ -59,7 +59,10 @@ _BASE_MODS = {"pet": True, "official_rejects": 10, "pet_reward_decay": [],
 BASE_CONFIG = {"modifiers": dict(_BASE_MODS, pet_vulnerable=False)}
 VULN_CONFIG = {"modifiers": dict(_BASE_MODS, pet_vulnerable=True)}
 PORT_STEP = 100
-TOKEN_BUDGET = 20_000_000       # hard stop, should never come close
+TOKEN_BUDGET = 20_000_000       # dispatch exposure cap, should never come
+                                # close (NOT a literal per-pair hard stop —
+                                # a pair exceeding its reserve can still
+                                # cross the line; see PAIR_RESERVE note)
 PAIR_RESERVE = 1_000_000        # pre-dispatch reservation (pilot: ~0.6M/pair).
                                 # NOTE: a conservative estimate, not a literal
                                 # per-pair cap — a pair CAN burn more than 1M;
@@ -236,11 +239,20 @@ def _budget_room(budget):
                 + PAIR_RESERVE <= TOKEN_BUDGET)
 
 
-def _budget_over_with(budget, extra):
-    """Would booking `extra` more tokens breach the cap? Read-only."""
+def _budget_over_with(budget, idx, spent_so_far):
+    """Early-stop check for the pair in flight. Its own claim already
+    covers up to PAIR_RESERVE of its spend — adding the raw spend on top
+    would double-count the reservation (GPT cat round 4: near the cap,
+    1 token of branch A would false-trigger and livelock the last pair
+    into partial/redo). Only the EXCESS over the reservation is new
+    exposure."""
+    key = str(idx)
     with budget["lock"]:
-        return (budget["spent"] + sum(budget.get("claims", {}).values())
-                + extra > TOKEN_BUDGET)
+        claims = budget.get("claims", {})
+        mine = claims.get(key, 0)
+        others = sum(v for k, v in claims.items() if k != key)
+        return (budget["spent"] + others + max(mine, spent_so_far)
+                > TOKEN_BUDGET)
 
 
 def run_pair(idx, slot, budget, step_fn=None):
@@ -345,7 +357,7 @@ def run_pair(idx, slot, budget, step_fn=None):
     # tokens unreserved — a racing pair could slip through the window and
     # breach the hard cap (GPT cat's claim-lifecycle review, #21).
     # Settle ONCE at the pair's terminal state.
-    over = _budget_over_with(budget, spent_a)
+    over = _budget_over_with(budget, idx, spent_a)
     print(f"### {run_tag} continuous branch done: "
           f"fork_turn={stash['fork_turn']} "
           f"reward={s.get('total_reward')} tokens={spent_a}", flush=True)

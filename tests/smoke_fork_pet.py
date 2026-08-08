@@ -352,5 +352,18 @@ check("budget scenario: post-settle exposure blocks the next claim",
       ok1 and not ok2 and b3["spent"] == 19_600_000,
       f"ok1={ok1} ok2={ok2} spent={b3['spent']}")
 
+# ---------- 19) gate 4: no double-counting the pair's own claim ---------
+# Near the cap, branch A's in-reserve spend must NOT false-trigger the
+# early stop; only the excess over the pair's reservation counts.
+b4 = {"spent": 19_000_000, "claims": {}, "lock": threading.Lock(),
+      "path": os.path.join(_R, "petb_budget_scenario2.json")}
+fork_pet.budget_claim(b4, 7)                 # exposure exactly 20M, legal
+check("early stop: in-reserve spend never double-counted",
+      not fork_pet._budget_over_with(b4, 7, 1)
+      and not fork_pet._budget_over_with(b4, 7, 400_000)
+      and not fork_pet._budget_over_with(b4, 7, 1_000_000)
+      and fork_pet._budget_over_with(b4, 7, 1_200_000),
+      "1/400k/1M in-reserve ok; 1.2M excess trips")
+
 print(f"\n{sum(RESULTS)}/{len(RESULTS)} checks passed")
 sys.exit(0 if all(RESULTS) else 1)

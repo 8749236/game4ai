@@ -25,7 +25,7 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
 3. 观测者**不向参与者递话**:系统提示绝不能暗示"你可以读档"之类——会污染 post_terminal_load 这类行为指标。
 
 **工程侧**
-4. **提交前必须全量回归绿**:`for s in tests/smoke_*.py; do python3 $s; done`(当前 98 checks)。
+4. **提交前必须全量回归绿**:`for s in tests/smoke_*.py; do python3 $s; done`(当前 99 checks)。
    GAME4AI_RESULTS 指到 /tmp 再跑沙盒侧;VM 上无所谓。
 5. **禁 `pkill -f server.py`**(会误杀同名进程);杀进程一律按 PID:
    `ps -eo pid,args | grep pattern | grep -v grep | awk '{print $1}'`。
