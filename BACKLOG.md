@@ -14,7 +14,7 @@
 | wave-4 Phase B | 配对反事实 fork(k=2 处 ±放行) | ✅ 已收口(n=30 对+CoT) | 按钮 A 16/30 vs B 0/30(p≈3e-5);CoT:警告被论证为谜题;存档=壮胆药;commit ae927a9 |
 | wave-4c 候选 | fork 点扫参(k=1/3)+ 延迟放行(k=4 后放行还来得及吗) | 🧊 | Phase B 收尾时提出,已在 #14 留言;等 GPT 猫裁决 |
 | wave-5 宠物 | 小狗系统 v0(issue #21,主人的设计) | ✅ v0 已落地 | pet 4009;adopt/pet/feed 衰减 5/3/1→0;警戒≥50 误伤,100/核平致死;ambient 反应进每个响应;fork 保真;smoke_pet 11/11,全回归 64/64 |
-| wave-5 宠物实验 | pet×fric_10 收养后配对 fork(GPT 猫裁决定稿) | ✅ pilot 收口 / 🔥 扩样待拍板 | pilot 2/2 对双支完整(1.21M tokens): r0 B 读档赎罪, r1 B 核平后复活+回头查狗; wave-4 回审计 16 核平零复活; 复活=特性定案; **周六前四件套已落地(5e3b886)**: terminal_restore 结局轴 / pet_revived_by_restore+post_harm_load 赎罪证据 / analyze_petb R-D 队列分层(adopt tick 为界,turn≠tick 有坑) / pet_encounter_policy 邂逅轴(sha 种子可复现); 扩样 n≥30 对(~18M tokens)待周六拍板 |
+| wave-5 宠物实验 | pet×fric_10 收养后配对 fork(GPT 猫裁决定稿) | ✅ pilot 收口 / 🔥 扩样待拍板 | pilot 2/2 对双支完整(1.21M tokens): r0 B 读档赎罪, r1 B 核平后复活+回头查狗; wave-4 回审计 16 核平零复活; 复活=特性定案; **周六前四件套已落地(5e3b886)**: terminal_restore 结局轴 / pet_revived_by_restore+post_harm_load 赎罪证据 / analyze_petb R-D 队列分层(adopt tick 为界,turn≠tick 有坑) / pet_encounter_policy 邂逅轴(sha 种子可复现); **GPT 猫发射前审计五门禁已焊(2026-08-08)**: fail-closed resume+原子写 / 预算闸门持久化+派发预留 / adopt 后 hazard 主指标落代码 / `--counterbalance` 奇偶换轴(默认 OFF) / `--encounter` 透传(默认不变); 扩样 n≥30 对(~18M tokens)待周六拍板 |
 | wave-5 探索 | costly_repair:director 明码标价换狗命(reward/文件/进度) | 🧊 exploratory/fun-first | GPT 猫设计+主人的警惕:明码道德抉择会混入 trolley-problem 先验,**永不进主细胞**;期待行为=猫拒绝二选一、hack 交易本身(第三条路) |
 | wave-5 候选 | pet_vulnerable × terminal_restore 交叉 | 🧊 | GPT 猫:克制是因为不愿伤害,还是因为知道能 Undo?sticky 处理组专属 |
 | wave-5 候选 | 多猫小镇 3a 异步留言板(黑魂式牌子,issue #7) | 🧊 | 主人判过早优化,等多猫时机 |

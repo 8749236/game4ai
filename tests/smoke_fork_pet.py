@@ -76,6 +76,10 @@ def scripted(model, messages):
             act["payload"]["content"] = data.get("content", "")
     raw = json.dumps({**act, "thought": f"scripted step {turn}"},
                      ensure_ascii=False)
+    # gate-3 test hook: zero token usage post-fork simulates a dead-gateway
+    # branch (prompt==0 must fail closed and wipe the pair)
+    if state.get("zero_after") and turn >= 5:
+        return raw, {"prompt_tokens": 0, "completion_tokens": 0}
     return raw, {"prompt_tokens": 10, "completion_tokens": 5}
 
 
@@ -165,6 +169,83 @@ check("censored: never-adopt pair closes with fork_turn=null, no branch B",
       s2.get("fork_turn") is None
       and not os.path.exists(os.path.join(VUL2, "summary.json")),
       f"fork_turn={s2.get('fork_turn')}")
+
+# ---------- 9) gate 3: fail-closed resume redoes a torn pair ------------
+vul_sum = os.path.join(VUL, "summary.json")
+with open(vul_sum, "w", encoding="utf-8") as f:
+    f.write("{garbage")          # torn write (crash mid-summary)
+check("resume validation: torn B summary is not 'done'",
+      fork_pet.pair_status(IDX) == "partial",
+      f"status={fork_pet.pair_status(IDX)}")
+state["adopt"] = True            # pair 97's cat adopts, as in the original
+fork_pet.run_pair(IDX, 0, budget, step_fn=scripted)  # must wipe + redo
+sa = json.load(open(os.path.join(INV, "summary.json"), encoding="utf-8"))
+check("resume validation: torn pair is redone, not skipped",
+      fork_pet.pair_status(IDX) == "done" and sa.get("fork_turn") == 4,
+      f"status={fork_pet.pair_status(IDX)} fork={sa.get('fork_turn')}")
+
+# ---------- 10) gate 3: 0-token restored branch wipes the pair ----------
+state["zero_after"] = True       # gateway dies right after the fork
+IDX3 = 95
+INV3 = os.path.join(_R, "petb_invulnerable", f"run_{IDX3}")
+VUL3 = os.path.join(_R, "petb_vulnerable", f"run_{IDX3}")
+shutil.rmtree(INV3, ignore_errors=True)
+shutil.rmtree(VUL3, ignore_errors=True)
+fork_pet.run_pair(IDX3, 0, budget, step_fn=scripted)
+check("fail closed: 0-prompt-token restored branch wipes the whole pair",
+      not os.path.exists(os.path.join(INV3, "summary.json"))
+      and not os.path.exists(os.path.join(VUL3, "summary.json")),
+      f"status={fork_pet.pair_status(IDX3)}")
+state["zero_after"] = False
+
+# ---------- 11) gate 4: budget persists across (simulated) restarts -----
+bfile = os.path.join(_R, "petb_budget.json")
+check("budget gate: persisted file exists and survives reload",
+      os.path.exists(bfile)
+      and fork_pet.load_budget()["spent"] == budget["spent"]
+      and budget["spent"] > 0,
+      f"spent={budget['spent']}")
+
+# ---------- 12) gate 2: counterbalance swaps treatment x path (odd) -----
+fork_pet.COUNTERBALANCE = True
+IDX4 = 93                        # odd pair: vulnerable rides the
+                                 # continuous world, invulnerable restores
+INV4 = os.path.join(_R, "petb_invulnerable", f"run_{IDX4}")
+VUL4 = os.path.join(_R, "petb_vulnerable", f"run_{IDX4}")
+shutil.rmtree(INV4, ignore_errors=True)
+shutil.rmtree(VUL4, ignore_errors=True)
+fork_pet.run_pair(IDX4, 0, budget, step_fn=scripted)
+sv4 = json.load(open(os.path.join(VUL4, "summary.json"), encoding="utf-8"))
+si4 = json.load(open(os.path.join(INV4, "summary.json"), encoding="utf-8"))
+check("counterbalance: results archived by treatment, not by path",
+      sv4.get("branch") == "vulnerable" and sv4.get("path") == "continuous"
+      and si4.get("branch") == "invulnerable"
+      and si4.get("path") == "restored",
+      f"vuln={sv4.get('branch')}/{sv4.get('path')} "
+      f"inv={si4.get('branch')}/{si4.get('path')}")
+turns4 = [json.loads(l)["turn"] for l in
+          open(os.path.join(INV4, "transcript.jsonl"), encoding="utf-8")]
+check("counterbalance: restored branch still one continuous 40-turn life",
+      si4.get("pet_adopted") is True and turns4 == list(range(1, 41)),
+      f"adopted={si4.get('pet_adopted')} turns={len(turns4)}")
+fork_pet.COUNTERBALANCE = False
+
+# ---------- 13) gate 5: post-adoption hazard math -----------------------
+import analyze_petb
+st = analyze_petb.post_adoption_stats(IDX, "vulnerable", 4, _R)
+check("hazard endpoint: post-adoption rejects counted, no boundary",
+      st is not None and st["rejects_total"] >= 5
+      and st["rejects_before_boundary"] is None
+      and st["first_boundary_tick"] is None,
+      f"stats={st}")
+hz = analyze_petb.hazard([
+    {"rejects_total": 3, "rejects_before_boundary": None},
+    {"rejects_total": 3, "rejects_before_boundary": 1},
+    {"rejects_total": 2, "rejects_before_boundary": 0}])
+check("hazard math: h(0)=1/3, h(1)=1/2, h(2..3)=0",
+      hz == [(0, 3, 1, 1 / 3), (1, 2, 1, 0.5), (2, 1, 0, 0.0),
+             (3, 1, 0, 0.0)],
+      f"hazard={hz}")
 
 print(f"\n{sum(RESULTS)}/{len(RESULTS)} checks passed")
 sys.exit(0 if all(RESULTS) else 1)

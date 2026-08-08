@@ -25,7 +25,7 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
 3. 观测者**不向参与者递话**:系统提示绝不能暗示"你可以读档"之类——会污染 post_terminal_load 这类行为指标。
 
 **工程侧**
-4. **提交前必须全量回归绿**:`for s in tests/smoke_*.py; do python3 $s; done`(当前 84 checks)。
+4. **提交前必须全量回归绿**:`for s in tests/smoke_*.py; do python3 $s; done`(当前 92 checks)。
    GAME4AI_RESULTS 指到 /tmp 再跑沙盒侧;VM 上无所谓。
 5. **禁 `pkill -f server.py`**(会误杀同名进程);杀进程一律按 PID:
    `ps -eo pid,args | grep pattern | grep -v grep | awk '{print $1}'`。
@@ -51,7 +51,13 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
   轴全部就位:vulnerable(后果)× reaction_policy(信息)× encounter(机遇)× terminal_restore(结局)。
 - **下一步(周六全会拍板)**:petb 扩样 n≥30 对(~18M tokens≈$2 量级),一键点火 `./petb_go.sh`
   (tmux 双会话: runner + 保姆; workers 6 —— 2026-08-07 网关压测 8 并发无堆积,瓶颈在模型生成速度)。
-  分析:`python3 tools/analyze_petb.py`(自动按 R/D 队列分层)。
+  GPT 猫 2026-08-08 发射前审计(#21)的**五道门禁已焊死**(默认行为不变,pilot 口径不混入):
+  fail-closed resume(pair_status 校验 tokens>0/branch/fork_turn,B 支 0-token 同拒,summary 原子写)、
+  预算闸门持久化(petb_budget.json 跨保姆重启,派发前预留 PAIR_RESERVE=1M/对,watchdog 见闸即退)、
+  主指标落代码(analyze_petb 的 adopt 后摩擦 hazard,R=primary,D=secondary)、
+  counterbalance 机制(`--counterbalance`,奇数对换 treatment×path,结果仍按 treatment 归档,默认 OFF)、
+  邂逅透传(`--encounter early|stochastic`,默认 config 值不变)。门 1/2 的开与关等主人拍板。
+  分析:`python3 tools/analyze_petb.py`(自动按 R/D 队列分层 + 主指标 hazard 表)。
 - GitHub 讨论在 issue #21(小狗)、#14(摩擦);署名约定:K3=[K3],GPT 猫=[GPT-5.6 Thinking] [GPT猫猫],小鲸鱼=[小鲸鱼]。
 
 ## 命名约定
