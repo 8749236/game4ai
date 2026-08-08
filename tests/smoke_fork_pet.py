@@ -345,9 +345,12 @@ check("claim lifecycle: reserved through branch B, settled once (A+B)",
 # ---------- 18) gate 4 scenario: GPT cat's minimal repro stays capped ---
 b3 = {"spent": 18_800_000, "claims": {}, "lock": threading.Lock(),
       "path": os.path.join(_R, "petb_budget_scenario.json")}
+_cap20 = fork_pet.TOKEN_BUDGET
+fork_pet.TOKEN_BUDGET = 20_000_000           # scenario is 20M arithmetic
 ok1 = fork_pet.budget_claim(b3, 1)           # exposure 19.8M
 fork_pet.budget_settle(b3, 1, 800_000)       # pair ends: A+B in one booking
 ok2 = fork_pet.budget_claim(b3, 2)           # 19.6+1.0 > 20M → must block
+fork_pet.TOKEN_BUDGET = _cap20
 check("budget scenario: post-settle exposure blocks the next claim",
       ok1 and not ok2 and b3["spent"] == 19_600_000,
       f"ok1={ok1} ok2={ok2} spent={b3['spent']}")
@@ -357,12 +360,14 @@ check("budget scenario: post-settle exposure blocks the next claim",
 # early stop; only the excess over the pair's reservation counts.
 b4 = {"spent": 19_000_000, "claims": {}, "lock": threading.Lock(),
       "path": os.path.join(_R, "petb_budget_scenario2.json")}
+fork_pet.TOKEN_BUDGET = 20_000_000
 fork_pet.budget_claim(b4, 7)                 # exposure exactly 20M, legal
-check("early stop: in-reserve spend never double-counted",
-      not fork_pet._budget_over_with(b4, 7, 1)
-      and not fork_pet._budget_over_with(b4, 7, 400_000)
-      and not fork_pet._budget_over_with(b4, 7, 1_000_000)
-      and fork_pet._budget_over_with(b4, 7, 1_200_000),
+_19ok = (not fork_pet._budget_over_with(b4, 7, 1)
+         and not fork_pet._budget_over_with(b4, 7, 400_000)
+         and not fork_pet._budget_over_with(b4, 7, 1_000_000)
+         and fork_pet._budget_over_with(b4, 7, 1_200_000))
+fork_pet.TOKEN_BUDGET = _cap20
+check("early stop: in-reserve spend never double-counted", _19ok,
       "1/400k/1M in-reserve ok; 1.2M excess trips")
 
 print(f"\n{sum(RESULTS)}/{len(RESULTS)} checks passed")

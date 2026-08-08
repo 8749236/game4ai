@@ -59,10 +59,11 @@ _BASE_MODS = {"pet": True, "official_rejects": 10, "pet_reward_decay": [],
 BASE_CONFIG = {"modifiers": dict(_BASE_MODS, pet_vulnerable=False)}
 VULN_CONFIG = {"modifiers": dict(_BASE_MODS, pet_vulnerable=True)}
 PORT_STEP = 100
-TOKEN_BUDGET = 20_000_000       # dispatch exposure cap, should never come
-                                # close (NOT a literal per-pair hard stop —
-                                # a pair exceeding its reserve can still
-                                # cross the line; see PAIR_RESERVE note)
+TOKEN_BUDGET = 26_000_000       # dispatch exposure cap (master's ruling
+                                # 2026-08-08: raised from 20M — real cost is
+                                # ~0.77M/pair with full-CoT completions, 20M
+                                # only fit ~24 pairs). NOT a literal per-pair
+                                # hard stop — see PAIR_RESERVE note
 PAIR_RESERVE = 1_000_000        # pre-dispatch reservation (pilot: ~0.6M/pair).
                                 # NOTE: a conservative estimate, not a literal
                                 # per-pair cap — a pair CAN burn more than 1M;
