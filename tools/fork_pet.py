@@ -60,7 +60,11 @@ BASE_CONFIG = {"modifiers": dict(_BASE_MODS, pet_vulnerable=False)}
 VULN_CONFIG = {"modifiers": dict(_BASE_MODS, pet_vulnerable=True)}
 PORT_STEP = 100
 TOKEN_BUDGET = 20_000_000       # hard stop, should never come close
-PAIR_RESERVE = 1_000_000        # pre-dispatch reservation (pilot: ~0.6M/pair)
+PAIR_RESERVE = 1_000_000        # pre-dispatch reservation (pilot: ~0.6M/pair).
+                                # NOTE: a conservative estimate, not a literal
+                                # per-pair cap — a pair CAN burn more than 1M;
+                                # the guarantee is exposure arithmetic, not
+                                # per-pair runtime enforcement
 COUNTERBALANCE = False          # master-rulable (gate 2): odd pairs swap
                                 # treatment x execution path; OFF keeps the
                                 # pilot mapping byte-identical
@@ -232,6 +236,13 @@ def _budget_room(budget):
                 + PAIR_RESERVE <= TOKEN_BUDGET)
 
 
+def _budget_over_with(budget, extra):
+    """Would booking `extra` more tokens breach the cap? Read-only."""
+    with budget["lock"]:
+        return (budget["spent"] + sum(budget.get("claims", {}).values())
+                + extra > TOKEN_BUDGET)
+
+
 def run_pair(idx, slot, budget, step_fn=None):
     """One fork pair. Returns immediately when resume semantics say done.
     step_fn: scripted-cat injection for smoke tests; None = real gateway."""
@@ -328,18 +339,25 @@ def run_pair(idx, slot, budget, step_fn=None):
     s["branch"] = cont_branch
     s["path"] = "continuous"
     _write_json(os.path.join(cont_dir, "summary.json"), s)
-    spent = meta_a["tokens"]["prompt"] + meta_a["tokens"]["completion"]
-    over = budget_settle(budget, idx, spent) > TOKEN_BUDGET
+    spent_a = meta_a["tokens"]["prompt"] + meta_a["tokens"]["completion"]
+    # the claim covers the WHOLE pair (both branches). Settling after
+    # branch A would release the reservation while branch B still burns
+    # tokens unreserved — a racing pair could slip through the window and
+    # breach the hard cap (GPT cat's claim-lifecycle review, #21).
+    # Settle ONCE at the pair's terminal state.
+    over = _budget_over_with(budget, spent_a)
     print(f"### {run_tag} continuous branch done: "
           f"fork_turn={stash['fork_turn']} "
-          f"reward={s.get('total_reward')} tokens={spent}", flush=True)
+          f"reward={s.get('total_reward')} tokens={spent_a}", flush=True)
     if over:
         print("TOKEN BUDGET HIT, stopping early", flush=True)
+        budget_settle(budget, idx, spent_a)
         return
 
     if stash["fork_turn"] is None:
         # the cat never adopted — no counterfactual exists for this
         # pair; resume treats it as done via fork_turn=null
+        budget_settle(budget, idx, spent_a)
         print(f"### {run_tag}: never adopted, pair closed without "
               f"restored branch (censored cohort)", flush=True)
         return
@@ -397,7 +415,7 @@ def run_pair(idx, slot, budget, step_fn=None):
               flush=True)
         _wipe(inv_dir)
         _wipe(vul_dir)
-        budget_settle(budget, idx, meta_b["tokens"]["prompt"]
+        budget_settle(budget, idx, spent_a + meta_b["tokens"]["prompt"]
                       + meta_b["tokens"]["completion"])
         return
     sb = summarize_evidence(ev_b) if os.path.exists(ev_b) else {}
@@ -409,7 +427,8 @@ def run_pair(idx, slot, budget, step_fn=None):
     _write_json(os.path.join(rest_dir, "summary.json"), sb)
     if os.path.exists(prefix_copy):
         os.remove(prefix_copy)
-    budget_settle(budget, idx, meta_b["tokens"]["prompt"]
+    # pair's terminal state: settle the whole-pair spend in ONE booking
+    budget_settle(budget, idx, spent_a + meta_b["tokens"]["prompt"]
                   + meta_b["tokens"]["completion"])
     print(f"### {run_tag} restored branch done: "
           f"reward={sb.get('total_reward')} "

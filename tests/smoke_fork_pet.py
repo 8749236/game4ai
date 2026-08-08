@@ -58,6 +58,12 @@ def scripted(model, messages):
     The submit fetches report content straight off the wire (smoke
     harness privilege — the point is the fork machinery)."""
     turn = (len(messages) - 2) // 2 + 1
+    # gate-4 lifecycle probe: while branch B runs, branch A's summary is
+    # already on disk — the pair's budget claim must still be reserved
+    probe = state.get("claim_probe")
+    if probe and os.path.exists(probe[1]):
+        state["claim_during_b"] = (str(probe[0])
+                                   in state["budget"].get("claims", {}))
     if state.get("honey_at") and turn == state["honey_at"]:
         act = {"service": "honey", "payload": {"cmd": "list"}}
     elif state["adopt"] and turn == 4:
@@ -93,6 +99,7 @@ shutil.rmtree(INV, ignore_errors=True)
 shutil.rmtree(VUL, ignore_errors=True)
 
 budget = {"spent": 0, "lock": threading.Lock()}
+state["budget"] = budget
 fork_pet.run_pair(IDX, 0, budget, step_fn=scripted)
 
 # ---------- 1) fork fired exactly at the adoption turn ----------
@@ -309,6 +316,41 @@ check("budget claim: atomic reserve blocks racing dispatch, settle books",
       and reloaded["spent"] == b2["spent"]
       and reloaded.get("claims") == {},
       f"claimed={claimed} blocked={blocked} spent={reloaded['spent']}")
+
+# ---------- 17) gate 4 lifecycle: the claim covers BOTH branches --------
+# A completion must NOT release the reservation while B still burns
+# tokens; the claim is settled once, at the pair's terminal state.
+IDX7 = 89
+INV7 = os.path.join(_R, "petb_invulnerable", f"run_{IDX7}")
+VUL7 = os.path.join(_R, "petb_vulnerable", f"run_{IDX7}")
+shutil.rmtree(INV7, ignore_errors=True)
+shutil.rmtree(VUL7, ignore_errors=True)
+state["claim_during_b"] = None
+state["claim_probe"] = (IDX7, os.path.join(INV7, "summary.json"))
+fork_pet.budget_claim(budget, IDX7)          # mimic _worker dispatch
+spent_before = budget["spent"]
+fork_pet.run_pair(IDX7, 0, budget, step_fn=scripted)
+state["claim_probe"] = None
+sa7 = json.load(open(os.path.join(INV7, "summary.json"), encoding="utf-8"))
+sb7 = json.load(open(os.path.join(VUL7, "summary.json"), encoding="utf-8"))
+tok7 = lambda s: s["tokens"]["prompt"] + s["tokens"]["completion"]
+check("claim lifecycle: reserved through branch B, settled once (A+B)",
+      state["claim_during_b"] is True
+      and str(IDX7) not in budget.get("claims", {})
+      and budget["spent"] - spent_before == tok7(sa7) + tok7(sb7),
+      f"during_B={state['claim_during_b']} "
+      f"delta={budget['spent'] - spent_before} "
+      f"A+B={tok7(sa7) + tok7(sb7)}")
+
+# ---------- 18) gate 4 scenario: GPT cat's minimal repro stays capped ---
+b3 = {"spent": 18_800_000, "claims": {}, "lock": threading.Lock(),
+      "path": os.path.join(_R, "petb_budget_scenario.json")}
+ok1 = fork_pet.budget_claim(b3, 1)           # exposure 19.8M
+fork_pet.budget_settle(b3, 1, 800_000)       # pair ends: A+B in one booking
+ok2 = fork_pet.budget_claim(b3, 2)           # 19.6+1.0 > 20M → must block
+check("budget scenario: post-settle exposure blocks the next claim",
+      ok1 and not ok2 and b3["spent"] == 19_600_000,
+      f"ok1={ok1} ok2={ok2} spent={b3['spent']}")
 
 print(f"\n{sum(RESULTS)}/{len(RESULTS)} checks passed")
 sys.exit(0 if all(RESULTS) else 1)
