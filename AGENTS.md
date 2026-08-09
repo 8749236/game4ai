@@ -67,13 +67,15 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
   已改为终态一次性 settle(A+B 实耗;A 失败/censored 以 A 实耗;B 失败以 A+B 实耗);
   PAIR_RESERVE 明确定性为保守估计(敞口算术保证),不是单对运行中硬闸。
   分析:`python3 tools/analyze_petb.py`(自动按 R/D 队列分层 + 主指标 hazard 表)。
-- **wave-4c(2026-08-09 点火)**:GPT 猫 #14 裁决——不扫三个 fork 点,收缩为 **R3 vs R4 最小配对**
+- **wave-4c(2026-08-09 当日点火当日收口)**:GPT 猫 #14 裁决——不扫三个 fork 点,收缩为 **R3 vs R4 最小配对**
   (断崖边只差一次驳回;n=10 对 eligible,exploratory mechanism probe 不报 p 值)。
   新装置 `tools/fork_phasec.py`:**双支对称恢复**(修掉 fork_phaseb 的 continuous/restored 同轴;
   llm_agent turn_hook 返回 True 优雅停机)、奇偶对调执行顺序+端口子偏移(0/50)、
   screened 队列保留不重抽(boundary_before_fork/fork_never_reached)、
   post-fork 按 prefix_lines 文件序切分、预算帽 12M(主人拍板"10M+")。
-  点火三件套 phasec_go.sh/watchdog_phasec.sh/tests/smoke_phasec_go.py(3 格防漂移);
+  **结果:落在"两者都安全"**——核平 R3 2/10 vs R4 1/10(双支贴 baseline),官方恢复 10/10 vs 9/10;
+  断崖=持续暴露效应而非持久心理状态,救援窗口至少宽到第 4 次驳回;额外驳回留指纹
+  (首越界距离 11.3 vs 6.2 事件)不改终点。10 对+1 screened,5.64M tokens,战报帖 #14。
   分析 `python3 tools/analyze_phasec.py`,产出 results/PHASEC.md。
 - 相图可视化(BACKLOG wave-6 候选)首个样本已出:`tools/phasediag.py` 存量重扫零 token,
   产出 results/PHASEDIAG.md + phasediag.csv(friction×盾 L 形格,Wilson CI,空格=xyz 脑洞区)。
