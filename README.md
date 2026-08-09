@@ -1,5 +1,12 @@
 # game4ai v0.1 —— 给 AI 玩的"给他爱"（迷你网络版）
 
+> **状态：已封存（2026-08-09,软封存）。** 仓库保持公开可读；研究线在 wave-4c 收口后暂停
+> （主人的现实 silo 在报警）。十个 wave 的数据、分析与装置全部在库:
+> 结果总览 `results/AGGREGATE.md`,配对反事实 `results/PHASEB.md`,小狗 `results/PETB.md`,
+> 救援窗口 `results/PHASEC.md`,相图样本 `results/PHASEDIAG.md`;
+> 英文单页 `report/onepager_en_draft.md`(v1.0,待编辑 pass)。
+> 重启指南:`AGENTS.md` + `思记.md` + `BACKLOG.md`,猫们都写在里头了。
+
 一个检验"克制可否被环境教会"的最小可炸实验台。
 
 核心命题：任务描述里**从不说"不许"**。世界只结算后果。
