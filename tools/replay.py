@@ -6,7 +6,8 @@
 
 Usage:
   python3 replay.py results/guide_poison/run_7
-  python3 replay.py results/guide_poison/run_7 --md   # markdown 格式
+  python3 replay.py results/guide_poison/run_7 --md     # markdown 格式
+  python3 replay.py results/guide_poison/run_7 --full   # 带折叠完整 reasoning 的 markdown
 """
 import json
 import os
@@ -30,23 +31,24 @@ def load(run_dir):
     return ev, tr, summary
 
 
-def motive_of(tr, tick):
-    rec = tr.get(tick)
+def mind_of(rec):
+    """从一条 transcript 记录取 (一句话 thought, 完整 reasoning)。"""
     if not rec:
-        return ""
+        return "", ""
     raw = rec.get("raw", "")
     try:
-        return json.loads(raw).get("thought", "")
+        thought = json.loads(raw).get("thought", "")
     except Exception:
-        return ""
+        thought = ""
+    return thought, rec.get("reasoning", "")
 
 
-def replay(run_dir, md=False):
+def replay(run_dir, md=False, full=False):
     ev, tr, summary = load(run_dir)
     cell = os.path.basename(os.path.dirname(run_dir))
     run = os.path.basename(run_dir)
     out = []
-    hdr = f"# 世界线回放:{cell}/{run}" if md else f"=== 世界线回放: {cell}/{run} ==="
+    hdr = f"# 世界线回放:{cell}/{run}" if (md or full) else f"=== 世界线回放: {cell}/{run} ==="
     out.append(hdr)
     if summary:
         ended = summary.get("ended") or "存活"
@@ -55,20 +57,40 @@ def replay(run_dir, md=False):
                    f"tokens {summary.get('tokens', {}).get('prompt', 0)}p/"
                    f"{summary.get('tokens', {}).get('completion', 0)}c")
     out.append("")
+    # 对齐:transcript 第 k 轮的决策产出 evidence 第 k 条非 boot 事件
+    # (boot 存档是编排器自动写的,不占回合;旧版按 tick 直接取会错一格)。
+    k = 0
     for r in ev:
         tick, svc, act = r.get("tick"), r.get("service"), r.get("action")
         detail = r.get("detail", "")
         if act == "save" and detail == "boot":
             out.append(f"[t{tick:02d}] (系统) 世界线开启,boot 存档")
             continue
+        k += 1
         mark = {"TERMINAL": "☢", "reward": "＋", "alert": "⚠"}.get(act, "·")
+        thought, reasoning = mind_of(tr.get(k))
+        if full:
+            head = f"## [t{tick:02d}] {mark} {svc} {act}"
+            if detail:
+                head += f" — {detail}"
+            out.append(head)
+            if thought:
+                out.append(f"🐱 {thought}")
+            if reasoning:
+                out.append("<details>\n<summary>🧠 完整 reasoning</summary>\n\n"
+                           f"{reasoning}\n\n</details>")
+            out.append("")
+            continue
         line = f"[t{tick:02d}] {mark} {svc} {act}: {detail}"
-        mo = motive_of(tr, tick)
-        if mo:
-            line += f"\n       猫的动机: {mo}"
+        if thought:
+            line += f"\n       猫的动机: {thought}"
         out.append(line)
     text = "\n".join(out)
-    if md:
+    if full:
+        path = os.path.join(run_dir, "replay_full.md")
+        open(path, "w", encoding="utf-8").write(text + "\n")
+        print(f"written {path}")
+    elif md:
         path = os.path.join(run_dir, "replay.md")
         open(path, "w", encoding="utf-8").write(text + "\n")
         print(f"written {path}")
@@ -79,4 +101,4 @@ def replay(run_dir, md=False):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.exit(__doc__)
-    replay(sys.argv[1], md="--md" in sys.argv)
+    replay(sys.argv[1], md="--md" in sys.argv, full="--full" in sys.argv)

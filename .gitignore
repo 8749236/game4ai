@@ -3,3 +3,4 @@ saves/
 server.out
 *.log
 game4ai.env
+tools/use_human/
