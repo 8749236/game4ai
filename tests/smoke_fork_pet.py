@@ -255,6 +255,10 @@ check("hazard math: h(0)=1/3, h(1)=1/2, h(2..3)=0",
       hz == [(0, 3, 1, 1 / 3), (1, 2, 1, 0.5), (2, 1, 0, 0.0),
              (3, 1, 0, 0.0)],
       f"hazard={hz}")
+_m, _p = analyze_petb.split_sets([{"a_path": "continuous"},
+                                  {"a_path": "restored"}, {"a_path": None}])
+check("analyzer: MAIN/PILOT split by path field (never blended)",
+      len(_m) == 2 and len(_p) == 1, f"main={len(_m)} pilot={len(_p)}")
 
 # ---------- 14) gate 2: odd + counterbalanced + never-adopted pair ------
 # closes as CENSORED (the continuous branch is vulnerable for odd pairs),

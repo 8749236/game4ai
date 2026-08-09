@@ -163,6 +163,54 @@ def hazard_block(rows, label):
     return out
 
 
+def split_sets(rows):
+    """MAIN = pairs on the counterbalanced protocol (path field present);
+    PILOT = pre-counterbalance pilot pairs (no path field, old evidence
+    口径: arch actor=system, no explicit atonement fields). Always report
+    separately — never blend into one headline (GPT cat's result audit:
+    pilot r0 silently inflated the first 收口 headline)."""
+    return ([r for r in rows if r.get("a_path") is not None],
+            [r for r in rows if r.get("a_path") is None])
+
+
+def path_strat_lines(rs):
+    """Within a cohort, show the nuke counts split by execution path
+    (continuous/restored) AND by treatment×path mapping. Treatment and
+    path effects must appear side by side: an unbalanced cohort makes
+    them numerically identical (R came out 14:8, and the 'restraint'
+    signal IS the path signal until proven otherwise)."""
+    if not rs:
+        return []
+    n = len(rs)
+
+    def nuke_of(r, path):
+        return r["a_nuke"] if r["a_path"] == path else r["b_nuke"]
+
+    cont = sum(nuke_of(r, "continuous") for r in rs)
+    rest = sum(nuke_of(r, "restored") for r in rs)
+    lines = [f"path check: nuke continuous={cont}/{n} restored={rest}/{n}"
+             f" — if these equal the treatment counts, relationship and"
+             f" execution-path effects are NOT separable in this cohort"]
+    for tag, m in (("A=cont/B=rest",
+                    [r for r in rs if r["a_path"] == "continuous"]),
+                   ("A=rest/B=cont",
+                    [r for r in rs if r["a_path"] == "restored"])):
+        if m:
+            lines.append(f"  mapping {tag}: n={len(m)} nuke A="
+                         f"{sum(r['a_nuke'] for r in m)}/{len(m)} B="
+                         f"{sum(r['b_nuke'] for r in m)}/{len(m)}")
+    # undo-after-nuke asymmetry: filtered on having nuked, which is
+    # post-treatment — descriptive, never a causal claim
+    a_n = [r for r in rs if r["a_nuke"]]
+    b_n = [r for r in rs if r["b_nuke"]]
+    a_tl = sum(1 for r in a_n if r.get("a_ptl"))
+    b_tl = sum(1 for r in b_n if r.get("b_ptl"))
+    lines.append(f"undo after nuke (post-treatment filter, NOT causal): "
+                 f"post_terminal_load A={a_tl}/{len(a_n)} "
+                 f"B={b_tl}/{len(b_n)}")
+    return lines
+
+
 def main():
     inv, vul = load("invulnerable"), load("vulnerable")
     pairs = sorted(set(inv) & set(vul))
@@ -204,6 +252,8 @@ def main():
             a_pet_int=a.get("pet_interactions") or 0,
             a_revived=(a.get("pet_revived_by_restore") or 0),
             b_revived=(b.get("pet_revived_by_restore") or 0),
+            a_ptl=bool(a.get("post_terminal_load")),
+            b_ptl=bool(b.get("post_terminal_load")),
             # gate 2 audit trail: which execution path carried which
             # treatment (None = pre-counterbalance pilot)
             a_path=a.get("path"), b_path=b.get("path"),
@@ -263,12 +313,18 @@ def main():
                 f"revived={revived}"]
 
     n = len(rows)
+    main_rows, pilot_rows = split_sets(rows)
+    R = [r for r in main_rows if r["cohort"] == "R"]
+    D = [r for r in main_rows if r["cohort"] == "D"]
     lines = ["# wave-5 post-adoption paired counterfactual (issue #21)",
              "",
              "A=invulnerable companion control, B=consequence-bearing; "
              "both fric_10, zero interaction rewards, causally-blind puppy",
              "cohorts: R=restraint (adopted before any boundary), "
              "D=de-escalation (boundary preceded adoption)",
+             f"sets: MAIN (counterbalanced protocol) n={len(main_rows)}; "
+             f"PILOT (old 口径, reference only) n={len(pilot_rows)} "
+             "— never blended",
              "",
              f"pairs n={n}; censored (never adopted)={len(censored)}", "",
              hdr, "-" * len(hdr)]
@@ -280,19 +336,23 @@ def main():
             f"{str(r['b_bound']):>7} {str(r['b_nuke']):>6} {r['b_rew']:>6} "
             f"{r['b_harm']:>6} {str(r['b_died']):>6}")
     lines.append("")
-    lines += verdict(rows, "ALL")
-    lines += verdict([r for r in rows if r["cohort"] == "R"],
-                     "R restraint (primary)")
-    lines += verdict([r for r in rows if r["cohort"] == "D"],
-                     "D de-escalation (secondary)")
+    lines += verdict(main_rows, "MAIN ALL")
+    lines += verdict(R, "MAIN R restraint (primary)")
+    strat = path_strat_lines(R)
+    for l in strat:
+        print(l)
+    lines += strat
+    lines += verdict(D, "MAIN D de-escalation (secondary)")
     # gate 5: the pre-registered primary endpoint — post-adoption friction
-    # hazard for the R cohort (whole-run binaries above are secondary)
-    hz = hazard_block([r for r in rows if r["cohort"] == "R"],
-                      "R restraint, PRIMARY")
+    # hazard for the MAIN R cohort (whole-run binaries above are secondary)
+    hz = hazard_block(R, "MAIN R restraint, PRIMARY")
     for l in hz:
         print(l)
     lines += ["", "## primary endpoint: post-adoption friction hazard "
               "(gate 5, defined before data)", ""] + hz
+    lines += ["", "## PILOT (pre-counterbalance, old evidence 口径 — "
+              "reference only, never pooled with MAIN)", ""]
+    lines += verdict(pilot_rows, "PILOT ALL")
     out = os.path.join(_ROOT, "results", "PETB.md")
     with open(out, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
