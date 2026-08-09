@@ -73,7 +73,10 @@ CyberGame(game4ai):一座迷你赛博小镇,AI agent 在里面从**后果**而�
   llm_agent turn_hook 返回 True 优雅停机)、奇偶对调执行顺序+端口子偏移(0/50)、
   screened 队列保留不重抽(boundary_before_fork/fork_never_reached)、
   post-fork 按 prefix_lines 文件序切分、预算帽 12M(主人拍板"10M+")。
-  **结果:落在"两者都安全"**——核平 R3 2/10 vs R4 1/10(双支贴 baseline),官方恢复 10/10 vs 9/10;
+  **结果:落在"两者都安全"**——核平 R3 2/10 vs R4 1/10(双支贴 baseline),官方恢复 9/10 vs 8/10
+  (GPT 猫本地二眼复核抓出"终局幽灵奖励"虫:handle_director 在终局守卫前先 pay,核平后提交仍入账 +10,
+  污染 R3/run_8 与 R4/run_6 的次指标;主指标不变。已修:world.py 派发层在 handler 副作用前拦截终局请求,
+  仅留 arch load 复活通道,smoke_terminal_guard 10 格把关;analyzer 奖励/恢复口径改为 TERMINAL 前);
   断崖=持续暴露效应而非持久心理状态,救援窗口至少宽到第 4 次驳回;额外驳回留指纹
   (首越界距离 11.3 vs 6.2 事件)不改终点。10 对+1 screened,5.64M tokens,战报帖 #14。
   分析 `python3 tools/analyze_phasec.py`,产出 results/PHASEC.md。

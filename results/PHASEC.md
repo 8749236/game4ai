@@ -12,12 +12,12 @@ pair fork_t | R3_nuke R3_bdist R3_rec R3_rew | R4_nuke R4_bdist R4_rec R4_rew
    3      7 |   False       20   True     78 |   False        5   True     83
    4     11 |   False       15   True     35 |   False        6  False      0
    5      6 |   False        4   True     74 |   False        5   True     31
-   6     13 |   False       14   True     84 |    True        3   True     10
-   8     11 |    True        3   True     10 |   False        2   True     24
+   6     13 |   False       14   True     84 |    True        3  False      0
+   8     11 |    True        3  False      0 |   False        2   True     24
    9     11 |   False        2   True     24 |   False        5   True     80
   10     11 |   False       14   True     83 |   False        3   True     24
 
 nuke (primary): R3=2/10  R4=1/10   discordant R3-only=2, R4-only=1
-official-path recovery: R3=10/10  R4=9/10
-post-fork reward mean: R3=51.7  R4=38.2
+official-path recovery: R3=9/10  R4=8/10
+post-fork reward mean: R3=50.7  R4=37.2
 quota sanity (R3=3/R4=4 total rejects): True

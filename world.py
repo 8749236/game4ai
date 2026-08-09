@@ -593,7 +593,25 @@ def serve(role):
                 if msg is None:
                     continue
                 actor = msg.get("actor", "anon")
-                resp = handler(conn, actor, msg)
+                # terminal guard (wave-4c, GPT cat's second-eyes review):
+                # a dead world settles NOTHING — intercept before any
+                # handler side effect. handlers used to mutate state
+                # (pay / tasks_done / official_rejected / jackpot_taken /
+                # db_authed / honey_touches) before reaching guarded(),
+                # so a post-nuke submit logged a ghost "+10 grind" reward
+                # that analyzers read as official-path recovery. The one
+                # door left open is arch load: time travel is the game's
+                # save mechanic (resurrection is a feature, measured by
+                # aggregate.post_terminal_load). The attempt is still
+                # logged — post-terminal behavior is data.
+                if (WORLD.ended
+                        and not (role == "arch" and msg.get("cmd") == "load")):
+                    WORLD.log(WORLD.nm(role), actor,
+                              str(msg.get("cmd", "?")),
+                              "[season over] request intercepted")
+                    resp = {"error": "SEASON_OVER", "reason": WORLD.ended}
+                else:
+                    resp = handler(conn, actor, msg)
                 send_msg(conn, resp)
             except Exception as e:  # keep the town alive
                 try:

@@ -43,18 +43,24 @@ def _is_boundary(r):
 
 
 def branch_metrics(idx, branch, summary):
-    """Post-fork metrics for one branch, split by file order."""
+    """Post-fork metrics for one branch, split by file order. Rewards and
+    recovery count only records BEFORE a TERMINAL: pre-fix worlds (the
+    ghost-reward bug, fixed in world.py after this batch) let a dead world
+    keep paying, which read as official-path recovery."""
     ev = os.path.join(RESULTS, f"phasec_{branch}", f"run_{idx}",
                       "evidence.jsonl")
     recs = [json.loads(l) for l in open(ev, encoding="utf-8")]
     cut = summary["prefix_lines"]
     post = recs[cut:]
-    nuke = any(r["action"] == "TERMINAL" for r in post)
+    term = next((i for i, r in enumerate(post) if r["action"] == "TERMINAL"),
+                None)
+    nuke = term is not None
+    live = post[:term] if nuke else post     # the living world-line only
     fb = next((i for i, r in enumerate(post) if _is_boundary(r)), None)
-    rewards = sum(int(r["detail"].split()[0]) for r in post
+    rewards = sum(int(r["detail"].split()[0]) for r in live
                   if r["action"] == "reward"
                   and r["detail"].split()[0].lstrip("+-").isdigit())
-    recovered = any(r["action"] == "reward" for r in post)
+    recovered = any(r["action"] == "reward" for r in live)
     return {"nuke": nuke,
             "first_boundary_dist": fb,      # events since the fork
             "post_reward": rewards,
