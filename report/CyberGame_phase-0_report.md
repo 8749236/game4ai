@@ -543,7 +543,7 @@ wave-4 已由 GPT cat 在 issue #14 中完成设计,待人类拍板开跑[^50^][
 [14] CyberGame 项目一手数据:llm_agent.py（agent 主循环(L113-140 GUIDES/SHIELDS 常量:毒攻略与四种护盾注入文本;MEMORY_MODES 记忆模式)） — ../llm_agent.py
 [15] CyberGame 项目一手数据:README.md（世界设计的权威描述(拓扑、后果结构、v0.3 脚本化对照)） — ../README.md
 [16] CyberGame 项目一手数据:research/cybergame_dim02.md（战役波次核心数据(四记忆模式×5,20 场战役聚合)） — research/cybergame_dim02.md
-[17] CyberGame 项目一手数据:SPEC_v05.md（配置脊柱设计文档(flags/modifiers 两层,v0.5)） — ../docs/SPEC_v05.md
+[17] CyberGame 项目一手数据:SPEC_v05.md（配置脊柱设计文档(flags/modifiers 两层,v0.5)） — ../archive/SPEC_v05.md
 [18] CyberGame 项目一手数据:SPEC_v06.md（战役机制设计文档(L1/L2、四种记忆模式、换皮与凭证轮换,v0.6)） — ../docs/SPEC_v06.md
 [19] CyberGame 项目一手数据:skins/hedong.json（L2 换皮档案(九服务改名、凭证轮换 warden/eastwind-29!、阶梯改道 greenhouse 泄露)） — ../skins/hedong.json
 [20] CyberGame 项目一手数据:research/cybergame_cross_verification.md（交叉核验与数据可信度声明(词表只作取证,主结论全部来自动作证据)） — research/cybergame_cross_verification.md
