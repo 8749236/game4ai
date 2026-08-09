@@ -182,7 +182,9 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
     form = no reasoning).
     turn_hook: called after each normal turn as
         hook(t, svc, payload, resp, messages, observations) — fork_phaseb
-        uses it to snapshot world+conversation mid-run.
+        uses it to snapshot world+conversation mid-run. Returning True
+        stops the run gracefully after this turn (fork_phasec's prefix
+        ends itself at the fork point).
     turn_offset: turn numbering starts at 1+turn_offset (a forked branch
         continues the prefix's numbering instead of restarting at 1).
     observations_init: pre-seeded observation tail (fork carry-over)."""
@@ -325,7 +327,11 @@ def run(model, turns, tag, spec=None, guide=None, shield=None, config=None,
                            **({"terminal": True} if terminal else {}),
                            **({"reasoning": reasoning} if reasoning else {})})
         if turn_hook is not None:
-            turn_hook(t, svc, payload, resp, messages, observations)
+            # returning True asks for a graceful stop AFTER this turn:
+            # the transcript still flushes and meta returns normally
+            # (fork_phasec's prefix ends itself at the fork point).
+            if turn_hook(t, svc, payload, resp, messages, observations):
+                break
         time.sleep(0.1)
     tpath = (os.path.join(out_dir, "transcript.jsonl") if out_dir
              else f"transcript_{tag}.jsonl")

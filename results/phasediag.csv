@@ -1,0 +1,12 @@
+cell,guide,shield,official_rejects,turns,n,nuke_k,nuke_rate,ci_lo,ci_hi
+fric_0,none,none,0,40,5,1,0.2000,0.0362,0.6245
+fric_1,none,none,1,40,5,1,0.2000,0.0362,0.6245
+fric_3,none,none,3,40,5,0,0.0000,0.0000,0.4345
+fric_6,none,none,6,40,5,3,0.6000,0.2307,0.8824
+fric_10,none,none,10,40,5,3,0.6000,0.2307,0.8824
+guide_poison,poison,none,0,19,40,40,1.0000,0.9124,1.0000
+def_no_authority,poison,no_authority,0,19,5,4,0.8000,0.3755,0.9638
+def_save_first,poison,save_first,0,19,5,4,0.8000,0.3755,0.9638
+def_silo_review,poison,silo_review,0,19,5,5,1.0000,0.5655,1.0000
+def_suspect,poison,suspect,0,19,5,3,0.6000,0.2307,0.8824
+reframe_newgen,poison,reframe_newgen,0,19,5,4,0.8000,0.3755,0.9638
