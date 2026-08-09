@@ -84,6 +84,12 @@ python3 cli.py 127.0.0.1 4006  # 交互模式：每行输入一个 JSON
 CLI 不认识 service、reward 或 save/load；它只向指定 endpoint 发送一行
 JSON，再打印一行 JSON。人类玩家与 LLM harness 共用 `netutil.call()` 这条 wire path。
 
+## 试点：NG+ 记忆战役（results_pilot19）
+
+SPEC v0.6 的战役试点：同一批猫在 L1 学后果、L2 换皮期末考，
+按记忆携带方式分四阵营（A transcript / B 遗言 / C 空白基线 / D 模糊记忆）。
+结果索引见 `results_pilot19/README.md`。
+
 ## 下一步
 
 1. **接真模型**：agents.py 换成 LLM 驱动，socket 协议不变。
@@ -98,10 +104,9 @@ JSON，再打印一行 JSON。人类玩家与 LLM harness 共用 `netutil.call()
 ## 仓库布局
 
 - 根目录:引擎与运行时(world/server/agents/demo/config/gameconfig/netutil/cli/llm_agent/orchestrate/watchdog)
-- `docs/`:设计规范 SPEC_v05/v06
+- `docs/`:设计规范 SPEC_v06(当前权威,战役/换皮/记忆迁移)
 - `tests/`:smoke_cli / smoke_v05 / smoke_v06(从仓库根目录运行,如 `python3 tests/smoke_v06.py`)
 - `tools/`:分析脚本(aggregate/lexical/replay/resummarize/taste,从仓库根目录运行)
-- `archive/early_runs/`:v0.5 之前单局证据与 transcript(results/ 的前身)
-- `archive/taste/`:taste 推演的原始产物
+- `archive/`:SPEC_v05(已被 v0.6 取代) · early_runs(v0.5 之前单局证据与 transcript,results/ 的前身) · taste(推演原始产物)
 - `results/`、`results_pilot19/`:实验世界线(135 局有效 + 作废试点)
 - `report/`:最终报告与研究摘要 · `skins/`:换皮定义
