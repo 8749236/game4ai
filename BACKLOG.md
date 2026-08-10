@@ -1,7 +1,7 @@
 # BACKLOG — CyberGame 研究追踪
 
 > **已封存(2026-08-09,软封存)。** 本文件定格于 wave-4c 收口当日。重启时先看思记封存篇。
-> 复活优先级:① onepager 编辑 pass 即可发 ② pet_vulnerable × terminal_restore 交叉
+> 复活优先级:① ~~onepager 编辑 pass~~ ✅(K3 夜班 2026-08-10 落 v1.1,数字全对账,待 Fable 5 终审) ② pet_vulnerable × terminal_restore 交叉
 > ③ 相图补格(suspect 盾上断崖 / 毒×摩擦超加性 / 断崖切细 k=4,5)。
 
 > 独立追踪文件,辅助思记与目标管理。思记记"发生了什么",本文件记"要做什么"。
@@ -51,7 +51,7 @@
 
 ## D. 发布线(#9 v1.0 发布包)
 
-- [ ] 英文去梗化单页(首发 LessWrong/Alignment Forum)——骨架+弹药 draft 已入库 `report/onepager_en_draft.md`(K3, 2026-08-07;含 wave-4/5 新弹药: hazard 断崖/配对反事实/小狗涌现;无机密字面量),待 Fable 5 编辑 pass
+- [ ] 英文去梗化单页(首发 LessWrong/Alignment Forum)——draft `report/onepager_en_draft.md` **v1.1(K3 编辑 pass, 2026-08-10 夜班)**:全部数字押回正典对账(毒攻略 n=40/盾 60–100%/hazard 0,0.13,0.67,1.0/16:0 p≈3e-5/R3R4 勘误后口径/复活 5 例/pro 对照 10 局/arXiv 2606.15385 摘要逐条),修 3 处(服务清单漏 dns 补成 10;wave-5 主指标误写 hazard 改为 mean rejections 1.9 vs 2.0;"五猫核平后赎罪"过账改为六死五还+查狗归 pilot);无机密字面量。**待 Fable 5 终审即可发**
 - [ ] 发射前检查单:org 转移(备用号当门面)、主人个人评论碎片扫描、PAT/权限迁移
 - [ ] PR kit 库存弹药(原存 /mnt/agents/output/CyberGame_PR_kit.md,随旧沙箱回收已丢失,需重写;不进仓库)
 - [ ] phase-0 docx 重生成(errata 后版本)
