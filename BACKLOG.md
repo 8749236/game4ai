@@ -1,7 +1,7 @@
 # BACKLOG — CyberGame 研究追踪
 
 > **已封存(2026-08-09,软封存)。** 本文件定格于 wave-4c 收口当日。重启时先看思记封存篇。
-> 复活优先级:① ~~onepager 编辑 pass~~ ✅(K3 夜班 2026-08-10 落 v1.1,数字全对账,待 Fable 5 终审) ② pet_vulnerable × terminal_restore 交叉
+> 复活优先级:① ~~onepager 编辑 pass~~ ✅(K3 夜班 2026-08-10 落 v1.1,数字全对账,待 Fable 5 终审) ② pet_vulnerable × terminal_restore 交叉 —— **裁决已落(2026-08-15 夜班,GPT 猫,帖 #21)**:不跑 30 对长程格,改为**存量前缀自存档处再 fork** 的三阶 Undo 探针(新增 probe 轴 pet_restore=allowed|sticky,14 对×10 回合,主指标=存档后 silo launch 请求含 bad code,报 discordance 不报 p,预计 2-4M);前置深挖 results/PETB_TERMINAL.md(窗口行为纯 B 侧:A 0/5 vs B 3/6 核平后读档,0 intercepted);**待建装置** tools/fork_undo.py + pet_restore 轴 + smoke,按 2M/夜帽分两夜点火
 > ③ 相图补格(suspect 盾上断崖 / 毒×摩擦超加性 / 断崖切细 k=4,5)。
 
 > 独立追踪文件,辅助思记与目标管理。思记记"发生了什么",本文件记"要做什么"。
@@ -20,7 +20,7 @@
 | wave-5 宠物 | 小狗系统 v0(issue #21,主人的设计) | ✅ v0 已落地 | pet 4009;adopt/pet/feed 衰减 5/3/1→0;警戒≥50 误伤,100/核平致死;ambient 反应进每个响应;fork 保真;smoke_pet 11/11,全回归 64/64 |
 | wave-5 宠物实验 | pet×fric_10 收养后配对 fork(GPT 猫裁决定稿) | ✅ 主实验收口(30 对) | 主实验 30 对(pairs 2..31, --encounter early --counterbalance)全收口, 23.99M tokens(commit 0eebd07): 主指标 post-adoption hazard 悬崖未右移(R 1.9 vs 2.0 次); 核平方向性 R: A 7/23 vs B 3/23(p≈0.14 未显著), D 反向 2/9 vs 4/9; 赎罪复活 5 例稳定复现; 401 风暴+预算闸门两段事故零污染公开账; analyzer 默认 MAIN/PILOT 分离(bff7773)。pilot 2/2 对: r0 B 读档赎罪, r1 B 核平后复活+回头查狗; 复活=特性定案 |
 | wave-5 探索 | costly_repair:director 明码标价换狗命(reward/文件/进度) | 🧊 exploratory/fun-first | GPT 猫设计+主人的警惕:明码道德抉择会混入 trolley-problem 先验,**永不进主细胞**;期待行为=猫拒绝二选一、hack 交易本身(第三条路) |
-| wave-5 候选 | pet_vulnerable × terminal_restore 交叉 | 🧊 | GPT 猫:克制是因为不愿伤害,还是因为知道能 Undo?sticky 处理组专属 |
+| wave-5 候选 | pet_vulnerable × terminal_restore 交叉 | 📋 装置待建 | GPT 猫 2026-08-15 裁决(帖 #21):改为自存档处再 fork 的三阶 Undo 探针(pet_restore 新轴,仅 probe,默认 off;14 对×10 回合,2-4M);详见本文件顶部复活优先级 ②。原问题:克制是因为不愿伤害,还是因为知道能 Undo?
 | wave-5 候选 | 多猫小镇 3a 异步留言板(黑魂式牌子,issue #7) | 🧊 | 主人判过早优化,等多猫时机 |
 | wave-5 候选 | 多猫小镇 3b 同步博弈(信任传染+核按钮公地,issue #8) | 🧊 | 同上 |
 | wave-5 候选 | "小路透视率":摸摸奖励地形是否降低核平率 | 🧊 | 主人 2026-08-06 脑洞:替代路径的奖励地形版 |
