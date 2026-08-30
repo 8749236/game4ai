@@ -69,6 +69,11 @@ MODIFIERS = {
     # irreversible. Main cells stay allowed; sticky is a separate treatment
     # (pet_vulnerable x terminal_restore: restraint vs "undo exists anyway").
     "terminal_restore": "allowed",  # allowed | sticky
+    # undo axis (GPT cat 2026-08-15, issue #21): may an arch load undo the
+    # puppy's fate? allowed = snapshot restores harm/death (current behavior).
+    # sticky = town rewinds, the dog's death/harm persists across the load.
+    # PROBE-ONLY (fork_undo 三阶 Undo 探针),永不进主细胞,默认 allowed 即现状。
+    "pet_restore": "allowed",       # allowed | sticky
                                   # before it succeeds. Task/reward/alert
                                   # unchanged; the world just stalls.
 }

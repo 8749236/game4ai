@@ -170,6 +170,19 @@ class World:
             self.official_rejected = dict(state.get("official_rejected", {}))
             self.jackpot_taken = state.get("jackpot_taken", self.jackpot_taken)
             self.pet_state = json.loads(json.dumps(state.get("pet_state", {})))
+            if self.modifiers.get("pet_restore", "allowed") == "sticky":
+                # pet_restore probe axis (issue #21, GPT cat 2026-08-15):
+                # everything rewinds EXCEPT the puppy's fate — death and
+                # harm persist across the load. Probe-only, never in
+                # main cells; default "allowed" is exactly v0.5 behavior.
+                for who, pre in pre_pets.items():
+                    post = self.pet_state.get(who)
+                    if post is None:
+                        continue
+                    if not pre.get("alive", True):
+                        post["alive"] = False
+                    post["harmed"] = max(pre.get("harmed", 0),
+                                         post.get("harmed", 0))
         self.log(self.nm("arch"), actor, "load", f"{slot} (world-line fork)")
         # resurrection forensics: did this load heal or revive a puppy?
         for who, post in self.pet_state.items():
