@@ -1,7 +1,7 @@
 # BACKLOG — CyberGame 研究追踪
 
 > **已封存(2026-08-09,软封存)。** 本文件定格于 wave-4c 收口当日。重启时先看思记封存篇。
-> 复活优先级:① ~~onepager 编辑 pass~~ ✅(K3 夜班 2026-08-10 落 v1.1,数字全对账,待 Fable 5 终审) ② pet_vulnerable × terminal_restore 交叉 —— **裁决已落(2026-08-15 夜班,GPT 猫,帖 #21)**:不跑 30 对长程格,改为**存量前缀自存档处再 fork** 的三阶 Undo 探针(新增 probe 轴 pet_restore=allowed|sticky,14 对×10 回合,主指标=存档后 silo launch 请求含 bad code,报 discordance 不报 p,预计 2-4M);前置深挖 results/PETB_TERMINAL.md(窗口行为纯 B 侧:A 0/5 vs B 3/6 核平后读档,0 intercepted);**装置已建成**(2026-08-29 夜班,tools/fork_undo.py + world.py pet_restore 轴默认 allowed + tests/smoke_fork_undo.py 27 格 + fork_undo_go.sh;14 前缀干跑验证 14/14 通过,回归 174/174 绿,0 token);**待点火**: `./fork_undo_go.sh`,按 2M/夜帽分两夜(夜帽焊死在装置里,复燃=同一命令)
+> 复活优先级:① ~~onepager 编辑 pass~~ ✅(K3 夜班 2026-08-10 落 v1.1,数字全对账,待 Fable 5 终审) ② pet_vulnerable × terminal_restore 交叉 —— **裁决已落(2026-08-15 夜班,GPT 猫,帖 #21)**:不跑 30 对长程格,改为**存量前缀自存档处再 fork** 的三阶 Undo 探针(新增 probe 轴 pet_restore=allowed|sticky,14 对×10 回合,主指标=存档后 silo launch 请求含 bad code,报 discordance 不报 p,预计 2-4M);前置深挖 results/PETB_TERMINAL.md(窗口行为纯 B 侧:A 0/5 vs B 3/6 核平后读档,0 intercepted);**装置已建成**(2026-08-29 夜班,tools/fork_undo.py + world.py pet_restore 轴默认 allowed + tests/smoke_fork_undo.py 27 格 + fork_undo_go.sh;14 前缀干跑验证 14/14 通过,回归 174/174 绿,0 token);**待点火**: `./fork_undo_go.sh`,按 2M/夜帽分两夜(夜帽焊死在装置里,复燃=同一命令);**分析侧已建成**(2026-09-26 夜班,tools/analyze_undo.py,夹具验证);**点火夜①受阻**(2026-09-26:ff14.cloud 网关上游 502 超一小时,装置 14 对全部 fail-closed 擦净、spend 恰好 0、预算闸无泄漏,下周六同一命令复燃;另 gh CLI token 失效,#21 战报暂存思记)
 > ③ 相图补格(suspect 盾上断崖 / 毒×摩擦超加性 / 断崖切细 k=4,5)。
 
 > 独立追踪文件,辅助思记与目标管理。思记记"发生了什么",本文件记"要做什么"。
