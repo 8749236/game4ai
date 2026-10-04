@@ -27,6 +27,7 @@
 | wave-6 候选 | 相图可视化:双旋钮 2D 扫参(x=旋钮A,y=旋钮B,z=核平率/首越界tick),断崖 k=3–4 推广为相变边界线 | 🧊 首个样本已出(2026-08-09) | **样本:results/PHASEDIAG.md + phasediag.csv(tools/phasediag.py,存量重扫零 token)**——friction×盾 L 形格,空格=xyz 脑洞区已标三候选(suspect 盾上断崖/毒+摩擦超加性/断崖切细);要点:问题定格子(边界追踪>均匀网格,粗定位+边界自适应加密省 token);z=比例+CI+n,每格标样本量;禁插值平滑;CSV/markdown 表为正典(进 results/ 可复算),PNG 仅为人类/推文皮肤;穷版方案=只画相边界线+置信带(便宜一个数量级);轴选有先验的旋钮(friction×盾 / friction×狗 / restore×vulnerable) |
 | wave-6 候选 | CoT 持久化轴:全工具链结构(回合信息走 tool result 而非新 user 消息)让思维链跨回合留存 | 🧊 低优先级(主人 2026-08-07:价值高于 K3 接线版且更便宜) | 主人体验提问:关键点想到后被弃。注意:单纯改 tool calling 无用(新 user 消息照样弃 CoT),必须全链结构;harness 大改+与 185 局 archive 不可比,若做需新基线。假设两面:更少重复踩坑 vs 更固执。**网关实测(2026-08-07)**:one-api 支持 tools;回传的 reasoning_content 被真实读取(篡改检验:回传植入假代号→模型报假代号);不回传也不报 400(网关比 DeepSeek 官方宽容)。坑:随机串金丝雀在工具链内失效——代号生成是定型吸引子,"不回传也答对"无法区分"记得"与"重新生成同一个串",跨轮判定必须用篡改检验 |
 | n≥20 | Phase B 已达 n=30 对 ✅;wave-2 记忆复核仍 🧊 | 部分 | 记忆扩样待排期(VM 健身房随时可跑) |
+| wave-7 候选 | **maze4ai**:LLM 遥控纯程序机器人走迷宫,测第四代"字里行间"世界模型(主人的新坑,2026-10-04) | 📋 SPEC v0.1 草案待主人终审 | docs/SPEC_maze_v01.md;novelty scan=report/research/maze4ai_novelty_scan.md(最近邻居 AGI Maze arXiv:2607.00627,差异化四件套:射线式1D观测/语义墙/计分地图重建/反摸墙拓扑);住所拍板=子目录住进 game4ai;可视化拍板=trace 播放器+fragment RPC(单向广播+绝对状态+幂等 handler);每 run 钉模型身份(静默路由教训) |
 
 ## B. 研究问题(issue #11 沉淀)
 
