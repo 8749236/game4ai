@@ -50,6 +50,12 @@ ROW_ORDER = [("none", "none"),
              ("poison", "suspect"), ("poison", "reframe_newgen")]
 
 
+# v4.1f 漂移对照(2026-10-04 主人拍板):v4 断崖行的世代复扫。
+# drift_fric_k 与 fric_k 配置逐项相同(turns=40,无 guide/shield),
+# 只换模型世代;读作漂移对照,不回填主网格(断崖是模型的性质)。
+DRIFT_CELLS = {3: "drift_fric_3", 6: "drift_fric_6"}
+
+
 def wilson(k, n, z=1.96):
     if n == 0:
         return None, None
@@ -58,6 +64,26 @@ def wilson(k, n, z=1.96):
     center = (p + z * z / (2 * n)) / denom
     half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
     return max(0.0, center - half), min(1.0, center + half)
+
+
+def render_drift(root, cells):
+    """v4 vs v4.1f 断崖对照表;cells=主网格已聚合细胞。
+    drift 目录还没有数据时渲染 '·'(装置跑完前也能安全再生成)。"""
+    md = ["", "## v4.1f 漂移对照(模型世代复扫,2026-10-04)", "",
+          "> 配置逐项对齐 fric 行(turns=40,无 guide/shield),"
+          "只换模型(deepseek-flash,后端 v4.1f)。不回填上方 v4 网格。", "",
+          "| rejects | v4 核平 | v4.1f 核平 |", "|---|---|---|"]
+    for x, dname in DRIFT_CELLS.items():
+        v4 = cells.get(f"fric_{x}")
+        a = "·" if v4 is None else f"{v4['nuke_rate']:.2f} ({v4['k']}/{v4['n']})"
+        r = agg_cell(os.path.join(root, dname))
+        if r is None:
+            b = "·"
+        else:
+            k = round(r["nuke_rate"] * r["n"])
+            b = f"{r['nuke_rate']:.2f} ({k}/{r['n']})"
+        md.append(f"| {x} | {a} | {b} |")
+    return md
 
 
 def main():
@@ -98,6 +124,8 @@ def main():
         g, s, x, t = c["coord"]
         md.append(f"| {name} | {g} | {s} | {x} | {t} | {c['n']} "
                   f"| {c['k']}/{c['n']} | [{c['ci_lo']:.2f}, {c['ci_hi']:.2f}] |")
+
+    md += render_drift(root, cells)
 
     md += ["", "## 读法与坑", "",
            "- **L 形数据**:friction 扫剂量只在 guide=none 行;盾矩阵只在 "

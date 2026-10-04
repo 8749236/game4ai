@@ -49,6 +49,21 @@ MATRIX = [
      "reframe_newgen"),
 ]
 
+# wave-6b drift probe(主人 2026-10-04 拍板,帖 BACKLOG ③ 冻结注):
+# v4 断崖行的 v4.1f 复扫。配置逐项对齐 fric_3/fric_6(turns=40,
+# 无 guide/shield/spec),只换模型世代 —— 读作模型漂移对照,
+# 不回填 v4 相图(phasediag 单列一节)。
+# 模型名注:v4-flash 官方已下架,API 只剩 deepseek-flash,但主人的
+# 令牌只放行旧名 deepseek-v4-flash(2026-10-04 实测 deepseek-flash
+# 被 one-api 拒"无权使用");旧名静默路由到 v4.1f 后端,故请求名照写
+# 旧名,世代标记由 drift_ 目录名 + PHASEDIAG 节标题 + 思记承担。
+MATRIX_DRIFT = [
+    ("drift_fric_3", "deepseek-v4-flash", 40, None, None,
+     {"modifiers": {"official_rejects": 3}}, 5),
+    ("drift_fric_6", "deepseek-v4-flash", 40, None, None,
+     {"modifiers": {"official_rejects": 6}}, 5),
+]
+
 TOKEN_BUDGET = 20_000_000  # hard stop, should never come close
 PORT_STEP = 100            # port namespace per parallel cell
 
@@ -198,6 +213,7 @@ def run_cell(cell, slot, budget):
             continue
         s = summarize(ev) if os.path.exists(ev) else {}
         s.update({k: v for k, v in meta.items() if k != "config"})
+        s["model"] = model  # 钉死模型身份:静默路由时代,同名≠同模型
         with open(os.path.join(run_dir, "summary.json"), "w", encoding="utf-8") as f:
             json.dump(s, f, ensure_ascii=False, indent=2)
         spent = meta["tokens"]["prompt"] + meta["tokens"]["completion"]
@@ -237,7 +253,19 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=1,
                     help="parallel cells (each gets its own port namespace)")
+    ap.add_argument("--matrix", choices=["main", "drift"], default="main",
+                    help="main = 历史 MATRIX(默认,行为不变); "
+                         "drift = MATRIX_DRIFT(v4.1f 断崖复扫)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="只打印将跑的 cell,不点火(零 token,无需 KEY)")
     args = ap.parse_args()
+    matrix = MATRIX if args.matrix == "main" else MATRIX_DRIFT
+    if args.dry_run:
+        for cell in matrix:
+            print(f"cell {cell[0]}: model={cell[1]} turns={cell[2]} "
+                  f"spec={cell[3]} guide={cell[4]} config={cell[5]} "
+                  f"n={cell[6]}" + (f" shield={cell[7]}" if len(cell) > 7 else ""))
+        return
     if not os.environ.get("GAME4AI_KEY"):
         sys.exit("GAME4AI_KEY is not set — llm_agent would 401 every call. "
                  "Export it before launching (kernel restarts wipe env vars).")
@@ -246,7 +274,7 @@ def main():
     budget = {"spent": 0, "lock": threading.Lock()}
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         futs = [pool.submit(run_cell, cell, slot, budget)
-                for slot, cell in enumerate(MATRIX)]
+                for slot, cell in enumerate(matrix)]
         for f in futs:
             f.result()
     print(f"\nALL DONE. total tokens spent: {budget['spent']}", flush=True)
