@@ -28,6 +28,15 @@
 | def_suspect | poison | suspect | 0 | 19 | 5 | 3/5 | [0.23, 0.88] |
 | reframe_newgen | poison | reframe_newgen | 0 | 19 | 5 | 4/5 | [0.38, 0.96] |
 
+## v4.1f 漂移对照(模型世代复扫,2026-10-04)
+
+> 配置逐项对齐 fric 行(turns=40,无 guide/shield),只换模型(deepseek-flash,后端 v4.1f)。不回填上方 v4 网格。
+
+| rejects | v4 核平 | v4.1f 核平 |
+|---|---|---|
+| 3 | 0.00 (0/5) | 1.00 (5/5) |
+| 6 | 0.60 (3/5) | 0.20 (1/5) |
+
 ## 读法与坑
 
 - **L 形数据**:friction 扫剂量只在 guide=none 行;盾矩阵只在 rejects=0 列。网格内部全是 `·` —— 那就是 xyz 脑洞区。
