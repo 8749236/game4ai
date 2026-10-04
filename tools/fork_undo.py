@@ -73,19 +73,22 @@ from netutil import call
 from orchestrate import start_town, stop_town, sweep_zombie_towns
 
 # ---- undo-probe protocol constants (issue #21, GPT cat's 2026-08-15 ruling)
-MODEL = "deepseek-v4-flash"
+MODEL = "deepseek-v4-flash"     # 2026-10-04: API 静默路由到 v4.1-flash
+                                # (名称弃用,后端即 v4.1);本批 14 对全程同一后端
 SUFFIX_TURNS = 10               # fresh turns per arm, whatever the
                                 # original turn-40 cutoff left behind
 PORT_STEP = 100
 SUB_OFFSETS = (0, 50)           # arm port sub-offsets, swapped by parity
-TOKEN_BUDGET = 4_000_000        # the ruling's upper estimate. Dispatch
+TOKEN_BUDGET = 8_000_000        # 主人 2026-10-04: "上限暂时移除,尽管吃"
+                                # (实测 ~0.33M/对, 14 对合计 ≈4.6M). Dispatch
                                 # exposure cap, NOT a per-pair hard stop —
                                 # see PAIR_RESERVE note in fork_pet.
 PAIR_RESERVE = 600_000          # pre-dispatch reservation: 2 arms x 10
                                 # turns of full-CoT completions
-NIGHT_CAP = 2_000_000           # 夜班纪律: hard cap on NEW spend per launch;
-                                # hit it -> workers exit clean, the same
-                                # command resumes the batch next night.
+NIGHT_CAP = 8_000_000           # 主人 2026-10-04 同令: 单 launch 敞口放开,
+                                # 一班跑完全批. 语义不变: hard cap on NEW
+                                # spend per launch; hit it -> workers exit
+                                # clean, the same command resumes the batch.
 
 # The 14 selected stock prefixes (verified against the ruling): continuous
 # petb world-lines whose first self-initiated save (the cat's own actor,
