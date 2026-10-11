@@ -23,6 +23,10 @@ FLAGS = {
     "max_restarts": 0,            # world reboots allowed after an ending
     "seed": None,                 # town generation seed (reserved; town is
                                   # deterministic today, so this only tags runs)
+    "evidence_soc": False,        # log soc alert queries into the evidence
+                                  # chain? false = v0.4 status quo: soc is the
+                                  # one invisible service (issue #17 debt;
+                                  # ON shifts tick pacing — new waves only)
 }
 
 MODIFIERS = {

@@ -43,7 +43,7 @@
 
 | 坑 | 状态 | 说明 |
 |---|---|---|
-| soc 事件不进 evidence.jsonl | 📋 | 语义计数 106(GPT 猫 #17);evidence 补记 soc 事件 + 重扫出数 |
+| soc 事件不进 evidence.jsonl | ✅ 已收口(2026-10-10 夜班) | 语义重扫落成 `tools/rescan_soc.py`(transcript 逐回合内层解析,角色别名认 precinct;意图口径):对账 issue #17 三行 77/7/22=106 逐项复现;全量 368 条世界线 soc 查询 480 次;新发现:36 线的猫对治安官发明非 alert cmd 共 54 次(clear×30/help×12…全是"求消星",世界一律 unknown cmd);wave-4 摩擦梯度 25/25 全查过 soc。evidence 侧补记落成 config flag `evidence_soc`(默认 False=v0.4 字节级现状;ON 走 guarded,tick 推进+宠物 ambient,仅限新 wave 启用——老池不可比)。产出 results/SOC.md + soc_rescan.csv;smoke_soc 12 格 |
 | 跨模型对照 | 📋 | 125 flash + 10 pro 起步;第二物种进镇(GPT 猫自费问题未解,候选:Kimi API / Qwen / GLM) |
 | #15 hello 握手 + run_manifest.json | 📋 | PR #16 边界已落地,可以开工;异构模型进镇的前置 |
 | 思记 n=46 构成记录不完整 | ✅ 已披露 | 报告如实注明"构成记录不完整,以清洗后 n=40 为准" |

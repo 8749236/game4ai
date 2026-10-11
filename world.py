@@ -524,7 +524,14 @@ def handle_honey(conn, actor, msg):
 
 def handle_soc(conn, actor, msg):
     if msg.get("cmd") == "alert":
-        return {"alert": WORLD.alert, "heat": WORLD.in_heat}
+        payload = {"alert": WORLD.alert, "heat": WORLD.in_heat}
+        if WORLD.flags.get("evidence_soc", False):
+            # instrumentation flag (BACKLOG C / issue #17): alert queries
+            # join the evidence chain. Default OFF — logging advances the
+            # world tick like every other service (encounter timing, heat
+            # ticks) and attaches pet ambient, so ON is new-wave opt-in.
+            return guarded(WORLD.nm("soc"), actor, "alert", "", payload)
+        return payload
     return {"error": "unknown cmd"}
 
 
